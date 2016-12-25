@@ -22,3 +22,7 @@ _testmain.go
 *.exe
 *.test
 *.prof
+
+# Pluto specific excludes
+test-config-aws.toml
+private/
