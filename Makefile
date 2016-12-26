@@ -1,4 +1,4 @@
-.PHONY: clean deps all pluto dovecot
+.PHONY: clean deps build folders pluto dovecot
 
 clean:
 	go clean -i ./...
@@ -6,7 +6,10 @@ clean:
 deps:
 	go get -t ./...
 
-build: pluto dovecot
+build: folders pluto dovecot
+
+folders:
+	if [ ! -d "results" ]; then mkdir results; fi
 
 pluto:
 	CGO_ENABLED=0 go build -ldflags '-extldflags "-static"' test-pluto-append.go

@@ -20,11 +20,13 @@ type Config struct {
 // Pluto defines the relevant information in
 // order to connect to a pluto system to test.
 type Pluto struct {
-	IP          string
-	Port        string
-	TLS         bool
-	RootCertLoc string
-	Distributor Distributor
+	IP             string
+	Port           string
+	TLS            bool
+	RootCertLoc    string
+	Distributor    Distributor
+	AppendTest     User
+	ConcurrentTest ConcurrentTest
 }
 
 // Dovecot contains IP and port of the comparison
@@ -40,6 +42,19 @@ type Dovecot struct {
 type Distributor struct {
 	CertLoc string
 	KeyLoc  string
+}
+
+// User carries authentication information for a test
+// user in system to be tested.
+type User struct {
+	Name     string
+	Password string
+}
+
+// ConcurrentTest contains a slice of users to test
+// concurrent access for.
+type ConcurrentTest struct {
+	Users []User
 }
 
 // Functions

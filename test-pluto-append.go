@@ -1,14 +1,18 @@
 package main
 
 import (
+	"bytes"
 	"fmt"
 	"log"
+	"os"
+	"time"
 
 	"crypto/x509"
 	"io/ioutil"
 
 	"github.com/emersion/go-imap/client"
 	"github.com/numbleroot/pluto-evaluation/config"
+	"github.com/numbleroot/pluto-evaluation/messages"
 	"github.com/numbleroot/pluto/crypto"
 )
 
@@ -62,32 +66,55 @@ func main() {
 	}
 
 	// Log in as first user.
-	err = imapClient.Login("user0", "password0")
+	err = imapClient.Login(config.Pluto.AppendTest.Name, config.Pluto.AppendTest.Password)
 	if err != nil {
-		log.Fatalf("[evaluation.TestPlutoAppend] Failed to login as 'user0': %s\n", err.Error())
+		log.Fatalf("[evaluation.TestPlutoAppend] Failed to login as '%s': %s\n", config.Pluto.AppendTest.Name, err.Error())
 	}
+
+	log.Printf("[evaluation.TestPlutoAppend] Logged in as '%s'.\n", config.Pluto.AppendTest.Name)
 
 	// Log out on function exit.
 	defer imapClient.Logout()
 
-	// Select INBOX as mailbox.
-	inbox, err := imapClient.Select("INBOX", false)
+	// Take current time stamp and create log file name.
+	logFileTime := time.Now()
+	logFileName := fmt.Sprintf("results/pluto-append-test-%s.log", logFileTime.Format("2006-01-02-15-04-05"))
+
+	// Attempt to create a test log file containing
+	// measured test times.
+	logFile, err := os.Create(logFileName)
 	if err != nil {
-		log.Fatalf("[evaluation.TestPlutoAppend] Error during selecting 'INBOX': %s\n", err.Error())
+		log.Fatalf("[evaluation.TestPlutoAppend] Failed to create test log file '%s': %s\n", logFileName, err.Error())
 	}
 
-	log.Printf("inbox: %#v\n", inbox)
+	// Sync to storage and close on any exit.
+	defer logFile.Close()
+	defer logFile.Sync()
 
-	// For each mail to append:
-	// * take current time stamp A
-	// * prepare log line
-	// * send mail to remote system
-	// * wait for response
-	// * log reponse time stamp B
-	// * calculate rtt = B - A
-	// * finish log line and append to test log
+	// Prepare message to append.
+	appendMsg := bytes.NewBufferString(messages.Msg01)
+
+	for num := 0; num < 10; num++ {
+
+		// Take current time stamp.
+		timeStart := time.Now().UnixNano()
+
+		// Send mail message to server.
+		err := imapClient.Append("INBOX", nil, time.Time{}, appendMsg)
+
+		// Take time stamp after function execution.
+		timeEnd := time.Now().UnixNano()
+
+		// Now handle error if present.
+		if err != nil {
+			log.Fatalf("[evaluation.TestPlutoAppend] %d: Failed to send Msg01 to server: %s\n", num, err.Error())
+		}
+
+		log.Printf("Took %d - %d = %d nanoseconds.\n", timeEnd, timeStart, (timeEnd - timeStart))
+
+		// Append log line to file.
+		logFile.WriteString(fmt.Sprintf("%d, %d\n", num, (timeEnd - timeStart)))
+	}
 
 	// Calculate statistics and print them.
-
-	// Close log file and exit.
 }
