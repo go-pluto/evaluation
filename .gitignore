@@ -26,6 +26,7 @@ _testmain.go
 # Pluto specific excludes
 test-config-aws.toml
 private/
+results/
 test-pluto-append
 test-pluto-concurrent
 test-pluto-failover

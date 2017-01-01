@@ -1,4 +1,4 @@
-.PHONY: clean deps build folders pluto dovecot
+.PHONY: clean deps build folders tests plot
 
 clean:
 	go clean -i ./...
@@ -6,16 +6,16 @@ clean:
 deps:
 	go get -t ./...
 
-build: folders pluto dovecot
+build: folders tests plot
 
 folders:
 	if [ ! -d "results" ]; then mkdir results; fi
 
-pluto:
-	CGO_ENABLED=0 go build -ldflags '-extldflags "-static"' test-pluto-append.go
+tests:
+	CGO_ENABLED=0 go build -ldflags '-extldflags "-static"' test-append.go
 	CGO_ENABLED=0 go build -ldflags '-extldflags "-static"' test-pluto-concurrent.go
 	CGO_ENABLED=0 go build -ldflags '-extldflags "-static"' test-pluto-failover.go
-
-dovecot:
-	CGO_ENABLED=0 go build -ldflags '-extldflags "-static"' test-dovecot-append.go
 	CGO_ENABLED=0 go build -ldflags '-extldflags "-static"' test-dovecot-concurrent.go
+
+plot:
+	CGO_ENABLED=0 go build -ldflags '-extldflags "-static"' plot-results.go
