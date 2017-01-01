@@ -13,9 +13,7 @@ folders:
 
 tests:
 	CGO_ENABLED=0 go build -ldflags '-extldflags "-static"' test-append.go
-	CGO_ENABLED=0 go build -ldflags '-extldflags "-static"' test-pluto-concurrent.go
-	CGO_ENABLED=0 go build -ldflags '-extldflags "-static"' test-pluto-failover.go
-	CGO_ENABLED=0 go build -ldflags '-extldflags "-static"' test-dovecot-concurrent.go
+	CGO_ENABLED=0 go build -ldflags '-extldflags "-static"' test-create.go
 
 plot:
 	CGO_ENABLED=0 go build -ldflags '-extldflags "-static"' plot-results.go
