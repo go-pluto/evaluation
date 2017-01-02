@@ -8,6 +8,7 @@ import (
 	"strings"
 	"time"
 
+	"image/color"
 	"io/ioutil"
 
 	"github.com/gonum/plot"
@@ -126,30 +127,23 @@ func PreparePlot(title string, xMax float64, xLabel string, yLabel string) (*plo
 func main() {
 
 	// Require two files to be plotted.
-	filesPath := flag.String("files", "", "Supply two space-separated test run log files for the same IMAP command.")
+	fileOnePath := flag.String("fileOne", "", "Supply first log file of IMAP command test.")
+	fileTwoPath := flag.String("fileTwo", "", "Supply second log file of IMAP command test.")
 	flag.Parse()
 
 	// Check that two files were supplied.
-	if *filesPath == "" {
-		log.Fatalf("[evaluation.Plot] Please specify two space-separated test run log files to plot against each other.\n")
-	}
-
-	// Parse out the two files.
-	files := strings.Split(*filesPath, " ")
-
-	// Check that actually two were supplied.
-	if len(files) != 2 {
-		log.Fatalf("[evaluation.Plot] Please supply exactly two corresponding test log files.\n")
+	if (*fileOnePath == "") || (*fileTwoPath == "") {
+		log.Fatalf("[evaluation.Plot] Please specify two test run log files to plot against each other.\n")
 	}
 
 	// Parse data from first log file.
-	dataOneSubject, dataOnePlatform, dataOneDateRaw, dataOnePoints, err := ParseDataFile(files[0])
+	dataOneSubject, dataOnePlatform, dataOneDateRaw, dataOnePoints, err := ParseDataFile(*fileOnePath)
 	if err != nil {
 		log.Fatalf("[evaluation.Plot] Failed to parse data from first file: %s\n", err.Error())
 	}
 
 	// Parse data from second log file.
-	dataTwoSubject, dataTwoPlatform, dataTwoDateRaw, dataTwoPoints, err := ParseDataFile(files[0])
+	dataTwoSubject, dataTwoPlatform, dataTwoDateRaw, dataTwoPoints, err := ParseDataFile(*fileTwoPath)
 	if err != nil {
 		log.Fatalf("[evaluation.Plot] Failed to parse data from first file: %s\n", err.Error())
 	}
@@ -203,9 +197,11 @@ func main() {
 		log.Fatalf("[evaluation.Plot] Failed to add scatter plot of second log file to plot: %s\n", err.Error())
 	}
 
-	// Let elements look like crosses.
+	// Let elements look like crosses and color differently.
 	scatterOne.GlyphStyle.Shape = draw.CrossGlyph{}
+	scatterOne.GlyphStyle.Color = color.RGBA{R: 0, G: 0, B: 184, A: 255}
 	scatterTwo.GlyphStyle.Shape = draw.CrossGlyph{}
+	scatterTwo.GlyphStyle.Color = color.RGBA{R: 239, G: 191, B: 0, A: 255}
 
 	// Finally, add scatter plots to prepared canvas plot.
 	p.Add(scatterOne, scatterTwo)
@@ -213,7 +209,7 @@ func main() {
 	p.Legend.Add(dataTwoPlatform, scatterTwo)
 
 	// Save resulting plot to svg file.
-	err = p.Save((9 * vg.Inch), (9 * vg.Inch), fmt.Sprintf("%s-on-%s-%s-vs-%s-%s.svg", dataSubject, dataOnePlatform, dataOneDateRaw, dataTwoPlatform, dataTwoDateRaw))
+	err = p.Save((9 * vg.Inch), (9 * vg.Inch), fmt.Sprintf("results/%s-on-%s-%s-vs-%s-%s.svg", dataSubject, dataOnePlatform, dataOneDateRaw, dataTwoPlatform, dataTwoDateRaw))
 	if err != nil {
 		log.Fatalf("[evaluation.Plot] Could not save finished plot to file: %s\n", err.Error())
 	}

@@ -2,6 +2,7 @@ package main
 
 import (
 	"bytes"
+	"flag"
 	"fmt"
 	"log"
 	"net"
@@ -24,6 +25,12 @@ import (
 func main() {
 
 	log.Printf("[evaluation.TestAppend] Testing APPEND command on pluto and Dovecot...\n")
+
+	// Make number of messages to send configurable.
+	runsFlag := flag.Int("runs", 100, "Specify how many times the command of this test is to be sent to server.")
+	flag.Parse()
+
+	runs := *runsFlag
 
 	// Read configuration from file.
 	config, err := config.LoadConfig("test-config-aws.toml")
@@ -111,7 +118,6 @@ func main() {
 	plutoLogFile.WriteString(fmt.Sprintf("Subject: APPEND\nPlatform: pluto\nDate: %s\n-----\n", logFileTime.Format("2006-01-02-15-04-05")))
 
 	// Prepare buffer to append individual results to.
-	runs := 100
 	results := make([]int64, runs)
 
 	// Prepare message to append.
