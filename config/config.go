@@ -27,17 +27,20 @@ type Pluto struct {
 	Distributor    Distributor
 	AppendTest     User
 	CreateTest     User
+	DeleteTest     User
 	ConcurrentTest ConcurrentTest
 }
 
 // Dovecot contains IP and port of the comparison
 // Dovecot system to test.
 type Dovecot struct {
-	IP         string
-	Port       string
-	TLS        bool
-	AppendTest User
-	CreateTest User
+	IP             string
+	Port           string
+	TLS            bool
+	AppendTest     User
+	CreateTest     User
+	DeleteTest     User
+	ConcurrentTest ConcurrentTest
 }
 
 // Distributor holds paths to self-signed certificates

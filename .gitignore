@@ -30,3 +30,4 @@ test-config-aws.toml
 plot-results
 test-append
 test-create
+test-delete
