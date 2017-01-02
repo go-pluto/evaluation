@@ -82,7 +82,7 @@ func main() {
 	}
 
 	// Log in as first user.
-	err = plutoC.Send(fmt.Sprintf("a LOGIN %s %s", config.Pluto.AppendTest.Name, config.Pluto.AppendTest.Password))
+	err = plutoC.Send(fmt.Sprintf("appendA LOGIN %s %s", config.Pluto.AppendTest.Name, config.Pluto.AppendTest.Password))
 	if err != nil {
 		log.Fatalf("[evaluation.TestAppend] Sending LOGIN to server failed with: %s\n", err.Error())
 	}
@@ -93,7 +93,7 @@ func main() {
 		log.Fatalf("[evaluation.TestAppend] Error during LOGIN as user %s: %s\n", config.Pluto.AppendTest.Name, err.Error())
 	}
 
-	if strings.HasPrefix(answer, "a OK ") != true {
+	if strings.HasPrefix(answer, "appendA OK") != true {
 		log.Fatalf("[evaluation.TestAppend] Server responded incorrectly to LOGIN: %s\n", answer)
 	}
 
@@ -129,7 +129,7 @@ func main() {
 	for num := 0; num < runs; num++ {
 
 		// Prepare command to send.
-		command := fmt.Sprintf("%d APPEND INBOX {%d}", num, appendMsgSize)
+		command := fmt.Sprintf("append%d APPEND INBOX {%d}", num, appendMsgSize)
 
 		// Take current time stamp.
 		timeStart := time.Now().UnixNano()
@@ -180,7 +180,7 @@ func main() {
 	}
 
 	// Log out.
-	err = plutoC.Send("z LOGOUT")
+	err = plutoC.Send("appendZ LOGOUT")
 	if err != nil {
 		log.Fatalf("[evaluation.TestAppend] Error during LOGOUT: %s\n", err.Error())
 	}
@@ -232,7 +232,7 @@ func main() {
 	}
 
 	// Log in as first user.
-	err = dovecotC.Send(fmt.Sprintf("a LOGIN %s %s", config.Dovecot.AppendTest.Name, config.Dovecot.AppendTest.Password))
+	err = dovecotC.Send(fmt.Sprintf("appendA LOGIN %s %s", config.Dovecot.AppendTest.Name, config.Dovecot.AppendTest.Password))
 	if err != nil {
 		log.Fatalf("[evaluation.TestAppend] Sending LOGIN to server failed with: %s\n", err.Error())
 	}
@@ -243,7 +243,7 @@ func main() {
 		log.Fatalf("[evaluation.TestAppend] Error during LOGIN as user %s: %s\n", config.Dovecot.AppendTest.Name, err.Error())
 	}
 
-	if strings.HasPrefix(answer, "a OK ") != true {
+	if strings.HasPrefix(answer, "appendA OK") != true {
 		log.Fatalf("[evaluation.TestAppend] Server responded incorrectly to LOGIN: %s\n", answer)
 	}
 
@@ -273,8 +273,8 @@ func main() {
 
 	for num := 0; num < runs; num++ {
 
-		// Prepare command to send and message on success to receive.
-		command := fmt.Sprintf("%d APPEND INBOX {%d}", num, appendMsgSize)
+		// Prepare command to send.
+		command := fmt.Sprintf("append%d APPEND INBOX {%d}", num, appendMsgSize)
 
 		// Take current time stamp.
 		timeStart := time.Now().UnixNano()
@@ -325,7 +325,7 @@ func main() {
 	}
 
 	// Log out.
-	err = dovecotC.Send("z LOGOUT")
+	err = dovecotC.Send("appendZ LOGOUT")
 	if err != nil {
 		log.Fatalf("[evaluation.TestAppend] Error during LOGOUT: %s\n", err.Error())
 	}

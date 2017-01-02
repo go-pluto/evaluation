@@ -26,6 +26,7 @@ type Pluto struct {
 	RootCertLoc    string
 	Distributor    Distributor
 	AppendTest     User
+	CreateTest     User
 	ConcurrentTest ConcurrentTest
 }
 
@@ -36,6 +37,7 @@ type Dovecot struct {
 	Port       string
 	TLS        bool
 	AppendTest User
+	CreateTest User
 }
 
 // Distributor holds paths to self-signed certificates
