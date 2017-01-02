@@ -126,16 +126,16 @@ func PreparePlot(title string, xMax float64, xLabel string, yLabel string) (*plo
 func main() {
 
 	// Require two files to be plotted.
-	filePath := flag.String("files", "", "Supply two space-separated test run log files for the same IMAP command.")
+	filesPath := flag.String("files", "", "Supply two space-separated test run log files for the same IMAP command.")
 	flag.Parse()
 
 	// Check that two files were supplied.
-	if *filePath == "" {
+	if *filesPath == "" {
 		log.Fatalf("[evaluation.Plot] Please specify two space-separated test run log files to plot against each other.\n")
 	}
 
 	// Parse out the two files.
-	files := strings.Split(*filePath, " ")
+	files := strings.Split(*filesPath, " ")
 
 	// Check that actually two were supplied.
 	if len(files) != 2 {

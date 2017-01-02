@@ -1,37 +1,24 @@
 package messages
 
+import (
+	"fmt"
+)
+
 // Variables
 
-var Msg01 string = `Date: Mon, 7 Feb 1994 21:52:25 -0800 (PST)
-From: Fred Foobar <foobar@Blurdybloop.COM>
-Subject: afternoon meeting
-To: mooch@owatagu.siam.edu
-Message-Id: <B27397-0100000@Blurdybloop.COM>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; CHARSET=US-ASCII
+var Msg01 string
+var Msg02 string
+var Msg03 string
 
-Hello Joe, do you think we can meet at 3:30 tomorrow?
-`
+// Functions
 
-var Msg02 string = `From: John Doe <jdoe@machine.example>
-To: Mary Smith <mary@example.net>
-Subject: Saying Hello
-Date: Fri, 21 Nov 1997 09:55:06 -0600
-Message-ID: <1234@local.machine.example>
+func init() {
 
-This is a message just to say hello.
-So, "Hello".
+	// Prepare messages with correct newline symbol.
 
-`
+	Msg01 = fmt.Sprintf("Date: Mon, 7 Feb 1994 21:52:25 -0800 (PST)\r\nFrom: Fred Foobar <foobar@Blurdybloop.COM>\r\nSubject: afternoon meeting\r\nTo: mooch@owatagu.siam.edu\r\nMessage-Id: <B27397-0100000@Blurdybloop.COM>\r\nMIME-Version: 1.0\r\nContent-Type: TEXT/PLAIN; CHARSET=US-ASCII\r\n\r\nHello Joe, do you think we can meet at 3:30 tomorrow?\r\n")
 
-var Msg03 string = `From: Mary Smith <mary@example.net>
-To: John Doe <jdoe@machine.example>
-Reply-To: "Mary Smith: Personal Account" <smith@home.example>
-Subject: Re: Saying Hello
-Date: Fri, 21 Nov 1997 10:01:10 -0600
-Message-ID: <3456@example.net>
-In-Reply-To: <1234@local.machine.example>
-References: <1234@local.machine.example>
+	Msg02 = fmt.Sprintf("From: John Doe <jdoe@machine.example>\r\nTo: Mary Smith <mary@example.net>\r\nSubject: Saying Hello\r\nDate: Fri, 21 Nov 1997 09:55:06 -0600\r\nMessage-ID: <1234@local.machine.example>\r\n\r\nThis is a message just to say hello.\r\nSo, \"Hello\".\r\n")
 
-This is a reply to your hello.
-`
+	Msg03 = fmt.Sprintf("From: Mary Smith <mary@example.net>\r\nTo: John Doe <jdoe@machine.example>\r\nReply-To: \"Mary Smith: Personal Account\" <smith@home.example>\r\nSubject: Re: Saying Hello\r\nDate: Fri, 21 Nov 1997 10:01:10 -0600\r\nMessage-ID: <3456@example.net>\r\nIn-Reply-To: <1234@local.machine.example>\r\nReferences: <1234@local.machine.example>\r\n\r\nThis is a reply to your hello.\r\n")
+}

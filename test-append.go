@@ -4,7 +4,9 @@ import (
 	"bytes"
 	"fmt"
 	"log"
+	"net"
 	"os"
+	"strings"
 	"time"
 
 	"crypto/tls"
@@ -12,9 +14,9 @@ import (
 	"io/ioutil"
 
 	"github.com/numbleroot/pluto-evaluation/config"
+	"github.com/numbleroot/pluto-evaluation/conn"
 	"github.com/numbleroot/pluto-evaluation/messages"
 	"github.com/numbleroot/pluto/crypto"
-	"github.com/numbleroot/pluto/imap"
 )
 
 // Functions
@@ -64,7 +66,7 @@ func main() {
 	}
 
 	// Create connection based on it.
-	plutoC := imap.NewConnection(plutoConn)
+	plutoC := conn.NewConn(plutoConn)
 
 	// Consume mandatory IMAP greeting.
 	_, err = plutoC.Receive()
@@ -84,7 +86,7 @@ func main() {
 		log.Fatalf("[evaluation.TestAppend] Error during LOGIN as user %s: %s\n", config.Pluto.AppendTest.Name, err.Error())
 	}
 
-	if answer != "a OK LOGIN completed" {
+	if strings.HasPrefix(answer, "a OK ") != true {
 		log.Fatalf("[evaluation.TestAppend] Server responded incorrectly to LOGIN: %s\n", answer)
 	}
 
@@ -120,9 +122,8 @@ func main() {
 
 	for num := 0; num < runs; num++ {
 
-		// Prepare command to send and message on success to receive.
+		// Prepare command to send.
 		command := fmt.Sprintf("%d APPEND INBOX {%d}", num, appendMsgSize)
-		doneMsg := fmt.Sprintf("%d OK APPEND completed", num)
 
 		// Take current time stamp.
 		timeStart := time.Now().UnixNano()
@@ -140,7 +141,7 @@ func main() {
 		}
 
 		if answer != "+ Ready for literal data" {
-			log.Fatalf("[evaluation.TestAppend] %d: Did not receive continuation command from server: %s\n", num, err.Error())
+			log.Fatalf("[evaluation.TestAppend] %d: Did not receive continuation command from server: %s\n", num, answer)
 		}
 
 		// Send mail message without additional newline.
@@ -155,12 +156,12 @@ func main() {
 			log.Fatalf("[evaluation.TestAppend] %d: Error during receiving response to APPEND: %s\n", num, err.Error())
 		}
 
-		if answer != doneMsg {
-			log.Fatalf("[evaluation.TestAppend] %d: Server responded incorrectly to APPEND command: %s\n", num, answer)
-		}
-
 		// Take time stamp after function execution.
 		timeEnd := time.Now().UnixNano()
+
+		if strings.Contains(answer, "APPEND completed") != true {
+			log.Fatalf("[evaluation.TestAppend] %d: Server responded incorrectly to APPEND command: %s\n", num, answer)
+		}
 
 		// Calculate round-trip time.
 		rtt := timeEnd - timeStart
@@ -192,7 +193,7 @@ func main() {
 
 	answer = fmt.Sprintf("%s\r\n%s", answer, nextAnswer)
 
-	if answer != "* BYE Terminating connection\r\nz OK LOGOUT completed" {
+	if strings.Contains(answer, "LOGOUT completed") != true {
 		log.Fatalf("[evaluation.TestAppend] Server responded incorrectly to LOGOUT: %s\n", answer)
 	}
 
@@ -210,13 +211,13 @@ func main() {
 	log.Printf("[evaluation.TestAppend] Connecting to Dovecot...\n")
 
 	// Connect to remote Dovecot system.
-	dovecotConn, err := tls.Dial("tcp", dovecotIMAPAddr, nil)
+	dovecotConn, err := net.Dial("tcp", dovecotIMAPAddr)
 	if err != nil {
 		log.Fatalf("[evaluation.TestAppend] Was unable to connect to remote Dovecot server: %s\n", err.Error())
 	}
 
 	// Create connection based on it.
-	dovecotC := imap.NewConnection(dovecotConn)
+	dovecotC := conn.NewConn(dovecotConn)
 
 	// Consume mandatory IMAP greeting.
 	_, err = dovecotC.Receive()
@@ -236,7 +237,7 @@ func main() {
 		log.Fatalf("[evaluation.TestAppend] Error during LOGIN as user %s: %s\n", config.Dovecot.AppendTest.Name, err.Error())
 	}
 
-	if answer != "a OK LOGIN completed" {
+	if strings.HasPrefix(answer, "a OK ") != true {
 		log.Fatalf("[evaluation.TestAppend] Server responded incorrectly to LOGIN: %s\n", answer)
 	}
 
@@ -268,7 +269,6 @@ func main() {
 
 		// Prepare command to send and message on success to receive.
 		command := fmt.Sprintf("%d APPEND INBOX {%d}", num, appendMsgSize)
-		doneMsg := fmt.Sprintf("%d OK APPEND completed", num)
 
 		// Take current time stamp.
 		timeStart := time.Now().UnixNano()
@@ -285,12 +285,12 @@ func main() {
 			log.Fatalf("[evaluation.TestAppend] %d: Error receiving response to APPEND: %s\n", num, err.Error())
 		}
 
-		if answer != "+ Ready for literal data" {
-			log.Fatalf("[evaluation.TestAppend] %d: Did not receive continuation command from server: %s\n", num, err.Error())
+		if answer != "+ OK" {
+			log.Fatalf("[evaluation.TestAppend] %d: Did not receive continuation command from server: %s\n", num, answer)
 		}
 
 		// Send mail message without additional newline.
-		_, err = fmt.Fprintf(dovecotC.Conn, "%s", appendMsg)
+		_, err = fmt.Fprintf(dovecotC.Conn, "%s\n", appendMsg)
 		if err != nil {
 			log.Fatalf("[evaluation.TestAppend] %d: Sending mail message to server failed with: %s\n", num, err.Error())
 		}
@@ -301,12 +301,12 @@ func main() {
 			log.Fatalf("[evaluation.TestAppend] %d: Error during receiving response to APPEND: %s\n", num, err.Error())
 		}
 
-		if answer != doneMsg {
-			log.Fatalf("[evaluation.TestAppend] %d: Server responded incorrectly to APPEND command: %s\n", num, answer)
-		}
-
 		// Take time stamp after function execution.
 		timeEnd := time.Now().UnixNano()
+
+		if strings.Contains(answer, "Append completed") != true {
+			log.Fatalf("[evaluation.TestAppend] %d: Server responded incorrectly to APPEND command: %s\n", num, answer)
+		}
 
 		// Calculate round-trip time.
 		rtt := timeEnd - timeStart
@@ -338,7 +338,7 @@ func main() {
 
 	answer = fmt.Sprintf("%s\r\n%s", answer, nextAnswer)
 
-	if answer != "* BYE Terminating connection\r\nz OK LOGOUT completed" {
+	if strings.Contains(answer, "Logging out") != true {
 		log.Fatalf("[evaluation.TestAppend] Server responded incorrectly to LOGOUT: %s\n", answer)
 	}
 
