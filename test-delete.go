@@ -120,7 +120,9 @@ func main() {
 
 	log.Printf("[evaluation.TestDelete] Running tests on pluto...\n")
 
-	for num := 0; num < runs; num++ {
+	for num := 1; num <= runs; num++ {
+
+		i := num - 1
 
 		// Prepare command to send.
 		command := fmt.Sprintf("delete%d DELETE test-mailbox-%d", num, num)
@@ -151,7 +153,7 @@ func main() {
 		rtt := timeEnd - timeStart
 
 		// Store result in buffer.
-		results[num] = rtt
+		results[i] = rtt
 
 		// Append log line to file.
 		plutoLogFile.WriteString(fmt.Sprintf("%d, %d\n", num, rtt))
@@ -249,7 +251,9 @@ func main() {
 	// Reset results slice.
 	results = make([]int64, runs)
 
-	for num := 0; num < runs; num++ {
+	for num := 1; num <= runs; num++ {
+
+		i := num - 1
 
 		// Prepare command to send.
 		command := fmt.Sprintf("delete%d DELETE test-mailbox-%d", num, num)
@@ -280,7 +284,7 @@ func main() {
 		rtt := timeEnd - timeStart
 
 		// Store result in buffer.
-		results[num] = rtt
+		results[i] = rtt
 
 		// Append log line to file.
 		dovecotLogFile.WriteString(fmt.Sprintf("%d, %d\n", num, rtt))

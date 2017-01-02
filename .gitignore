@@ -31,3 +31,4 @@ plot-results
 test-append
 test-create
 test-delete
+test-store

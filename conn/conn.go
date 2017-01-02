@@ -45,7 +45,7 @@ func (c *Conn) Receive() (string, error) {
 		if err != nil {
 
 			if err.Error() == "EOF" {
-				log.Printf("[imap.Receive] Node at %s disconnected...\n", c.Conn.RemoteAddr())
+				log.Printf("[conn.Receive] Node at %s disconnected...\n", c.Conn.RemoteAddr())
 			}
 
 			break

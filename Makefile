@@ -15,6 +15,7 @@ tests:
 	CGO_ENABLED=0 go build -ldflags '-extldflags "-static"' test-append.go
 	CGO_ENABLED=0 go build -ldflags '-extldflags "-static"' test-create.go
 	CGO_ENABLED=0 go build -ldflags '-extldflags "-static"' test-delete.go
+	CGO_ENABLED=0 go build -ldflags '-extldflags "-static"' test-store.go
 
 plot:
 	CGO_ENABLED=0 go build -ldflags '-extldflags "-static"' plot-results.go

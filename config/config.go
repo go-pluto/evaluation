@@ -28,6 +28,7 @@ type Pluto struct {
 	AppendTest     User
 	CreateTest     User
 	DeleteTest     User
+	StoreTest      User
 	ConcurrentTest ConcurrentTest
 }
 
@@ -40,6 +41,7 @@ type Dovecot struct {
 	AppendTest     User
 	CreateTest     User
 	DeleteTest     User
+	StoreTest      User
 	ConcurrentTest ConcurrentTest
 }
 
