@@ -1,0 +1,47 @@
+[Pluto]
+IP = "1.2.3.4"
+Port = "19933"
+TLS = true
+RootCertLoc = "private/root-certificate.pem"
+
+    [Pluto.Distributor]
+    CertLoc = "private/public-distributor-certificate.pem"
+    KeyLoc = "private/public-distributor-key.pem"
+
+    [Pluto.AppendTest]
+    Name = "user1"
+    Password = "password1"
+
+    [Pluto.CreateTest]
+    Name = "user2"
+    Password = "password2"
+
+    [Pluto.DeleteTest]
+    Name = "user2"
+    Password = "password2"
+
+    [Pluto.StoreTest]
+    Name = "user1"
+    Password = "password1"
+
+
+[Dovecot]
+IP = "4.3.2.1"
+Port = "143"
+TLS = false
+
+    [Dovecot.AppendTest]
+    Name = "user1"
+    Password = "password1"
+
+    [Dovecot.CreateTest]
+    Name = "user2"
+    Password = "password2"
+
+    [Dovecot.DeleteTest]
+    Name = "user2"
+    Password = "password2"
+
+    [Dovecot.StoreTest]
+    Name = "user1"
+    Password = "password1"
