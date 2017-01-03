@@ -10,6 +10,8 @@ build: folders tests plot
 
 folders:
 	if [ ! -d "results" ]; then mkdir results; fi
+	if [ ! -d "private" ]; then mkdir private; fi
+	chmod 0700 private
 
 tests:
 	CGO_ENABLED=0 go build -ldflags '-extldflags "-static"' test-append.go
