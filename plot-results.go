@@ -41,9 +41,9 @@ func ParseDataFile(filePath string) (string, string, string, plotter.XYs, error)
 	dataPointsRaw := strings.Split(data[1], "\n")
 
 	// Save meta information for direct access.
-	dataSubject := strings.TrimLeft(dataHeader[0], "Subject: ")
-	dataPlatform := strings.TrimLeft(dataHeader[1], "Platform: ")
-	dataDateRaw := strings.TrimLeft(dataHeader[2], "Date: ")
+	dataSubject := strings.TrimPrefix(dataHeader[0], "Subject: ")
+	dataPlatform := strings.TrimPrefix(dataHeader[1], "Platform: ")
+	dataDateRaw := strings.TrimPrefix(dataHeader[2], "Date: ")
 
 	// Reserve space for final data point slice of set one.
 	dataPoints := make(plotter.XYs, len(dataPointsRaw))
