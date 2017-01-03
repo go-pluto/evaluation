@@ -62,7 +62,7 @@ type User struct {
 // ConcurrentTest contains a slice of users to test
 // concurrent access for.
 type ConcurrentTest struct {
-	Users []User
+	User []User
 }
 
 // Functions

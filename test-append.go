@@ -299,7 +299,7 @@ func main() {
 			log.Fatalf("[evaluation.TestAppend] %d: Did not receive continuation command from server: %s\n", num, answer)
 		}
 
-		// Send mail message without additional newline.
+		// Send mail message.
 		_, err = fmt.Fprintf(dovecotC.Conn, "%s\n", appendMsg)
 		if err != nil {
 			log.Fatalf("[evaluation.TestAppend] %d: Sending mail message to server failed with: %s\n", num, err.Error())
