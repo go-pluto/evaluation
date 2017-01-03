@@ -104,7 +104,7 @@ func PreparePlot(title string, xMax float64, xLabel string, yLabel string) (*plo
 	p.Title.Font = bigFont
 
 	// Style x-axis a bit.
-	p.X.Min = 0.0
+	p.X.Min = 1.0
 	p.X.Max = xMax
 	p.X.Label.Text = xLabel
 	p.X.Label.Font = smallFont
