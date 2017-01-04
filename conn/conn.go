@@ -57,7 +57,7 @@ func (c *Conn) Receive() (string, error) {
 		return "", err
 	}
 
-	return strings.TrimSuffix(text, "\r\n"), nil
+	return strings.TrimRight(text, "\r\n"), nil
 }
 
 // Send in turn sends a textual message to the other

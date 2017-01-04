@@ -24,14 +24,16 @@ func main() {
 
 	log.Printf("[evaluation.TestCreate] Testing CREATE command on pluto and Dovecot...\n")
 
-	// Make number of messages to send configurable.
+	// Make test config file location and number of messages
+	// to send per test configurable.
+	configFlag := flag.String("config", "test-config.toml", "Specify location of config file that describes test setup configuration.")
 	runsFlag := flag.Int("runs", 100, "Specify how many times the command of this test is to be sent to server.")
 	flag.Parse()
 
 	runs := *runsFlag
 
 	// Read configuration from file.
-	config, err := config.LoadConfig("test-config-aws.toml")
+	config, err := config.LoadConfig(*configFlag)
 	if err != nil {
 		log.Fatalf("[evaluation.TestCreate] Error loading config: %s\n", err.Error())
 	}

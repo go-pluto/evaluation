@@ -13,7 +13,7 @@ $ make folders
 
 and place involved certificates under `private/`.
 
-Next, copy `test-config.toml.example` to `test-config-aws.toml` and adjust it to your setup. This includes specifying IPs, ports, certificates and authentication information in order for your tests to run successfully. Afterwards, execute
+Next, copy `test-config.toml.example` to `test-config.toml` and adjust it to your setup. This includes specifying IPs, ports, certificates and authentication information in order for your tests to run successfully. Afterwards, execute
 
 ```
 $ make build
