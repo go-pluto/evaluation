@@ -32,3 +32,5 @@ test-append
 test-create
 test-delete
 test-store
+test-append-concurrent
+test-create-concurrent
