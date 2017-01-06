@@ -46,7 +46,7 @@ func PlutoTester(start chan struct{}, done chan struct{}, plutoC *conn.Conn, con
 	for num := 1; num <= runs; num++ {
 
 		// Prepare command to send.
-		command := fmt.Sprintf("create%d CREATE test-mailbox-%d", num, num)
+		command := fmt.Sprintf("create%d CREATE evaluation-mailbox-%d", num, num)
 
 		// Take current time stamp.
 		timeStart := time.Now().UnixNano()
@@ -60,7 +60,7 @@ func PlutoTester(start chan struct{}, done chan struct{}, plutoC *conn.Conn, con
 		// Receive answer to APPEND request.
 		answer, err := plutoC.Receive()
 		if err != nil {
-			log.Fatalf("%d: Error receiving response to APPEND: %s\n", num, err.Error())
+			log.Fatalf("%d: Error receiving response to CREATE: %s\n", num, err.Error())
 		}
 
 		// Take time stamp after function execution.
@@ -130,7 +130,7 @@ func DovecotTester(start chan struct{}, done chan struct{}, dovecotC *conn.Conn,
 	for num := 1; num <= runs; num++ {
 
 		// Prepare command to send.
-		command := fmt.Sprintf("create%d CREATE test-mailbox-%d", num, num)
+		command := fmt.Sprintf("create%d CREATE evaluation-mailbox-%d", num, num)
 
 		// Take current time stamp.
 		timeStart := time.Now().UnixNano()
@@ -144,7 +144,7 @@ func DovecotTester(start chan struct{}, done chan struct{}, dovecotC *conn.Conn,
 		// Receive answer to APPEND request.
 		answer, err := dovecotC.Receive()
 		if err != nil {
-			log.Fatalf("%d: Error receiving response to APPEND: %s\n", num, err.Error())
+			log.Fatalf("%d: Error receiving response to CREATE: %s\n", num, err.Error())
 		}
 
 		// Take time stamp after function execution.

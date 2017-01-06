@@ -127,7 +127,7 @@ func main() {
 		i := num - 1
 
 		// Prepare command to send.
-		command := fmt.Sprintf("create%d CREATE test-mailbox-%d", num, num)
+		command := fmt.Sprintf("create%d CREATE evaluation-mailbox-%d", num, num)
 
 		// Take current time stamp.
 		timeStart := time.Now().UnixNano()
@@ -258,7 +258,7 @@ func main() {
 		i := num - 1
 
 		// Prepare command to send.
-		command := fmt.Sprintf("create%d CREATE test-mailbox-%d", num, num)
+		command := fmt.Sprintf("create%d CREATE evaluation-mailbox-%d", num, num)
 
 		// Take current time stamp.
 		timeStart := time.Now().UnixNano()
