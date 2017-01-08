@@ -27,8 +27,10 @@ RootCertLoc = "private/root-certificate.pem"
 
 [Dovecot]
 IP = "4.3.2.1"
-Port = "143"
-TLS = false
+Port = "993"
+TLS = true
+CertLoc = "private/dovecot-certificate.pem"
+KeyLoc = "private/dovecot-key.pem"
 
     [Dovecot.AppendTest]
     Name = "user1"

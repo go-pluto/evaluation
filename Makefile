@@ -23,6 +23,3 @@ tests:
 
 plot:
 	CGO_ENABLED=0 go build -ldflags '-extldflags "-static"' plot-results.go
-
-f:
-	CGO_ENABLED=0 go build -ldflags '-extldflags "-static"' test-create-concurrent.go

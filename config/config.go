@@ -38,6 +38,8 @@ type Dovecot struct {
 	IP             string
 	Port           string
 	TLS            bool
+	CertLoc        string
+	KeyLoc         string
 	AppendTest     User
 	CreateTest     User
 	DeleteTest     User

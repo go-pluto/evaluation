@@ -1,23 +1,21 @@
 package main
 
 import (
+	"bufio"
 	"bytes"
 	"flag"
 	"fmt"
 	"log"
-	"net"
 	"os"
 	"strings"
 	"time"
 
 	"crypto/tls"
-	"crypto/x509"
-	"io/ioutil"
 
 	"github.com/numbleroot/pluto-evaluation/config"
-	"github.com/numbleroot/pluto-evaluation/conn"
 	"github.com/numbleroot/pluto-evaluation/messages"
-	"github.com/numbleroot/pluto/crypto"
+	"github.com/numbleroot/pluto-evaluation/utils"
+	"github.com/numbleroot/pluto/imap"
 )
 
 // Functions
@@ -40,26 +38,10 @@ func main() {
 		log.Fatalf("Error loading config: %s\n", err.Error())
 	}
 
-	// Create TLS config.
-	plutoTLSConfig, err := crypto.NewPublicTLSConfig(config.Pluto.Distributor.CertLoc, config.Pluto.Distributor.KeyLoc)
+	// Create needed TLS configs with correct certificates.
+	plutoTLSConfig, dovecotTLSConfig, err := utils.InitTLSConfigs(config)
 	if err != nil {
-		log.Fatal(err)
-	}
-
-	// For tests, we currently need to build a custom
-	// x509 cert pool to accept the self-signed public
-	// distributor certificate.
-	plutoTLSConfig.RootCAs = x509.NewCertPool()
-
-	// Read distributor's public certificate in PEM format into memory.
-	plutoRootCert, err := ioutil.ReadFile(config.Pluto.Distributor.CertLoc)
-	if err != nil {
-		log.Fatalf("Failed to load cert file: %s\n", err.Error())
-	}
-
-	// Append certificate to test client's root CA pool.
-	if ok := plutoTLSConfig.RootCAs.AppendCertsFromPEM(plutoRootCert); !ok {
-		log.Fatalf("Failed to append cert.\n")
+		log.Fatalf("Error loading TLS configs for pluto and Dovecot: %s\n", err.Error())
 	}
 
 	// Create connection string to connect to pluto and Dovecot.
@@ -74,23 +56,28 @@ func main() {
 		log.Fatalf("Was unable to connect to remote pluto server: %s\n", err.Error())
 	}
 
-	// Create connection based on it.
-	plutoC := conn.NewConn(plutoConn)
+	// Create a new connection struct based on it.
+	plutoC := &imap.Connection{
+		OutConn:   plutoConn,
+		OutReader: bufio.NewReader(plutoConn),
+	}
 
 	// Consume mandatory IMAP greeting.
-	_, err = plutoC.Receive()
+	_, err = plutoC.Receive(false)
 	if err != nil {
 		log.Fatalf("Error during receiving initial server greeting: %s\n", err.Error())
 	}
 
+	log.Printf("Sending: '%s'\n", fmt.Sprintf("appendA LOGIN %s %s", config.Pluto.AppendTest.Name, config.Pluto.AppendTest.Password))
+
 	// Log in as first user.
-	err = plutoC.Send(fmt.Sprintf("appendA LOGIN %s %s", config.Pluto.AppendTest.Name, config.Pluto.AppendTest.Password))
+	err = plutoC.Send(false, fmt.Sprintf("appendA LOGIN %s %s", config.Pluto.AppendTest.Name, config.Pluto.AppendTest.Password))
 	if err != nil {
 		log.Fatalf("Sending LOGIN to server failed with: %s\n", err.Error())
 	}
 
 	// Wait for success message.
-	answer, err := plutoC.Receive()
+	answer, err := plutoC.Receive(false)
 	if err != nil {
 		log.Fatalf("Error during LOGIN as user %s: %s\n", config.Pluto.AppendTest.Name, err.Error())
 	}
@@ -139,13 +126,13 @@ func main() {
 		timeStart := time.Now().UnixNano()
 
 		// Send APPEND commmand to server.
-		err := plutoC.Send(command)
+		err := plutoC.Send(false, command)
 		if err != nil {
 			log.Fatalf("%d: Failed during sending APPEND command: %s\n", num, err.Error())
 		}
 
 		// Receive answer to APPEND request.
-		answer, err := plutoC.Receive()
+		answer, err := plutoC.Receive(false)
 		if err != nil {
 			log.Fatalf("%d: Error receiving response to APPEND: %s\n", num, err.Error())
 		}
@@ -155,13 +142,13 @@ func main() {
 		}
 
 		// Send mail message without additional newline.
-		_, err = fmt.Fprintf(plutoC.Conn, "%s", appendMsg)
+		_, err = fmt.Fprintf(plutoC.OutConn, "%s", appendMsg)
 		if err != nil {
 			log.Fatalf("%d: Sending mail message to server failed with: %s\n", num, err.Error())
 		}
 
 		// Receive answer to message transfer.
-		answer, err = plutoC.Receive()
+		answer, err = plutoC.Receive(false)
 		if err != nil {
 			log.Fatalf("%d: Error during receiving response to APPEND: %s\n", num, err.Error())
 		}
@@ -184,19 +171,19 @@ func main() {
 	}
 
 	// Log out.
-	err = plutoC.Send("appendZ LOGOUT")
+	err = plutoC.Send(false, "appendZ LOGOUT")
 	if err != nil {
 		log.Fatalf("Error during LOGOUT: %s\n", err.Error())
 	}
 
 	// Receive first part of answer.
-	answer, err = plutoC.Receive()
+	answer, err = plutoC.Receive(false)
 	if err != nil {
 		log.Fatalf("Error receiving first part of LOGOUT response: %s\n", err.Error())
 	}
 
 	// Receive next line from server.
-	nextAnswer, err := plutoC.Receive()
+	nextAnswer, err := plutoC.Receive(false)
 	if err != nil {
 		log.Fatalf("Error receiving second part of LOGOUT response: %s\n", err.Error())
 	}
@@ -221,28 +208,31 @@ func main() {
 	log.Printf("Connecting to Dovecot...\n")
 
 	// Connect to remote Dovecot system.
-	dovecotConn, err := net.Dial("tcp", dovecotIMAPAddr)
+	dovecotConn, err := tls.Dial("tcp", dovecotIMAPAddr, dovecotTLSConfig)
 	if err != nil {
 		log.Fatalf("Was unable to connect to remote Dovecot server: %s\n", err.Error())
 	}
 
-	// Create connection based on it.
-	dovecotC := conn.NewConn(dovecotConn)
+	// Create a new connection struct based on it.
+	dovecotC := &imap.Connection{
+		OutConn:   dovecotConn,
+		OutReader: bufio.NewReader(dovecotConn),
+	}
 
 	// Consume mandatory IMAP greeting.
-	_, err = dovecotC.Receive()
+	_, err = dovecotC.Receive(false)
 	if err != nil {
 		log.Fatalf("Error during receiving initial server greeting: %s\n", err.Error())
 	}
 
 	// Log in as first user.
-	err = dovecotC.Send(fmt.Sprintf("appendA LOGIN %s %s", config.Dovecot.AppendTest.Name, config.Dovecot.AppendTest.Password))
+	err = dovecotC.Send(false, fmt.Sprintf("appendA LOGIN %s %s", config.Dovecot.AppendTest.Name, config.Dovecot.AppendTest.Password))
 	if err != nil {
 		log.Fatalf("Sending LOGIN to server failed with: %s\n", err.Error())
 	}
 
 	// Wait for success message.
-	answer, err = dovecotC.Receive()
+	answer, err = dovecotC.Receive(false)
 	if err != nil {
 		log.Fatalf("Error during LOGIN as user %s: %s\n", config.Dovecot.AppendTest.Name, err.Error())
 	}
@@ -286,13 +276,13 @@ func main() {
 		timeStart := time.Now().UnixNano()
 
 		// Send APPEND commmand to server.
-		err := dovecotC.Send(command)
+		err := dovecotC.Send(false, command)
 		if err != nil {
 			log.Fatalf("%d: Failed during sending APPEND command: %s\n", num, err.Error())
 		}
 
 		// Receive answer to APPEND request.
-		answer, err := dovecotC.Receive()
+		answer, err := dovecotC.Receive(false)
 		if err != nil {
 			log.Fatalf("%d: Error receiving response to APPEND: %s\n", num, err.Error())
 		}
@@ -302,13 +292,13 @@ func main() {
 		}
 
 		// Send mail message.
-		_, err = fmt.Fprintf(dovecotC.Conn, "%s\n", appendMsg)
+		_, err = fmt.Fprintf(dovecotC.OutConn, "%s\n", appendMsg)
 		if err != nil {
 			log.Fatalf("%d: Sending mail message to server failed with: %s\n", num, err.Error())
 		}
 
 		// Receive answer to message transfer.
-		answer, err = dovecotC.Receive()
+		answer, err = dovecotC.Receive(false)
 		if err != nil {
 			log.Fatalf("%d: Error during receiving response to APPEND: %s\n", num, err.Error())
 		}
@@ -331,19 +321,19 @@ func main() {
 	}
 
 	// Log out.
-	err = dovecotC.Send("appendZ LOGOUT")
+	err = dovecotC.Send(false, "appendZ LOGOUT")
 	if err != nil {
 		log.Fatalf("Error during LOGOUT: %s\n", err.Error())
 	}
 
 	// Receive first part of answer.
-	answer, err = dovecotC.Receive()
+	answer, err = dovecotC.Receive(false)
 	if err != nil {
 		log.Fatalf("Error receiving first part of LOGOUT response: %s\n", err.Error())
 	}
 
 	// Receive next line from server.
-	nextAnswer, err = dovecotC.Receive()
+	nextAnswer, err = dovecotC.Receive(false)
 	if err != nil {
 		log.Fatalf("Error receiving second part of LOGOUT response: %s\n", err.Error())
 	}
