@@ -20,6 +20,8 @@ tests:
 	CGO_ENABLED=0 go build -ldflags '-extldflags "-static"' test-store.go
 	CGO_ENABLED=0 go build -ldflags '-extldflags "-static"' test-append-concurrent.go
 	CGO_ENABLED=0 go build -ldflags '-extldflags "-static"' test-create-concurrent.go
+	CGO_ENABLED=0 go build -ldflags '-extldflags "-static"' test-delete-concurrent.go
+	CGO_ENABLED=0 go build -ldflags '-extldflags "-static"' test-store-concurrent.go
 
 plot:
 	CGO_ENABLED=0 go build -ldflags '-extldflags "-static"' plot-results.go

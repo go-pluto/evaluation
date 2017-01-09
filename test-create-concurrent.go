@@ -49,13 +49,13 @@ func PlutoTester(start chan struct{}, done chan struct{}, plutoC *imap.Connectio
 		// Take current time stamp.
 		timeStart := time.Now().UnixNano()
 
-		// Send APPEND commmand to server.
+		// Send CREATE commmand to server.
 		err := plutoC.Send(false, command)
 		if err != nil {
-			log.Fatalf("%d: Failed during sending APPEND command: %s\n", num, err.Error())
+			log.Fatalf("%d: Failed during sending CREATE command: %s\n", num, err.Error())
 		}
 
-		// Receive answer to APPEND request.
+		// Receive answer to CREATE request.
 		answer, err := plutoC.Receive(false)
 		if err != nil {
 			log.Fatalf("%d: Error receiving response to CREATE: %s\n", num, err.Error())
@@ -133,13 +133,13 @@ func DovecotTester(start chan struct{}, done chan struct{}, dovecotC *imap.Conne
 		// Take current time stamp.
 		timeStart := time.Now().UnixNano()
 
-		// Send APPEND commmand to server.
+		// Send CREATE commmand to server.
 		err := dovecotC.Send(false, command)
 		if err != nil {
-			log.Fatalf("%d: Failed during sending APPEND command: %s\n", num, err.Error())
+			log.Fatalf("%d: Failed during sending CREATE command: %s\n", num, err.Error())
 		}
 
-		// Receive answer to APPEND request.
+		// Receive answer to CREATE request.
 		answer, err := dovecotC.Receive(false)
 		if err != nil {
 			log.Fatalf("%d: Error receiving response to CREATE: %s\n", num, err.Error())
