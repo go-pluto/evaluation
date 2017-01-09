@@ -23,7 +23,7 @@ import (
 func PlutoTester(start chan struct{}, done chan struct{}, plutoC *imap.Connection, connNum int, runs int, plutoLogFolder string, logFileTime time.Time, appendMsg *bytes.Buffer, appendMsgSize int) {
 
 	// Define an individual test log file name.
-	plutoLogFileName := fmt.Sprintf("%s/conn-%d.log", plutoLogFolder, connNum)
+	plutoLogFileName := fmt.Sprintf("%s/conn-%03d.log", plutoLogFolder, connNum)
 
 	// Attempt to create a test log file containing
 	// measured test times for pluto system.
@@ -124,7 +124,7 @@ func PlutoTester(start chan struct{}, done chan struct{}, plutoC *imap.Connectio
 func DovecotTester(start chan struct{}, done chan struct{}, dovecotC *imap.Connection, connNum int, runs int, dovecotLogFolder string, logFileTime time.Time, appendMsg *bytes.Buffer, appendMsgSize int) {
 
 	// Define an individual test log file name.
-	dovecotLogFileName := fmt.Sprintf("%s/conn-%d.log", dovecotLogFolder, connNum)
+	dovecotLogFileName := fmt.Sprintf("%s/conn-%03d.log", dovecotLogFolder, connNum)
 
 	// Attempt to create a test log file containing
 	// measured test times for Dovecot system.
