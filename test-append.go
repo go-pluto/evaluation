@@ -68,8 +68,6 @@ func main() {
 		log.Fatalf("Error during receiving initial server greeting: %s\n", err.Error())
 	}
 
-	log.Printf("Sending: '%s'\n", fmt.Sprintf("appendA LOGIN %s %s", config.Pluto.AppendTest.Name, config.Pluto.AppendTest.Password))
-
 	// Log in as first user.
 	err = plutoC.Send(false, fmt.Sprintf("appendA LOGIN %s %s", config.Pluto.AppendTest.Name, config.Pluto.AppendTest.Password))
 	if err != nil {
