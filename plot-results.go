@@ -100,8 +100,6 @@ func ParseDataFolder(folderPath string) (string, string, string, plotter.XYs, er
 
 	for i, file := range files {
 
-		fmt.Printf("file %d: %s\n", i, file)
-
 		// Parse contents of current file.
 		curDataSubject, curDataPlatform, curDataDateRaw, curDataPoints, err := ParseDataFile(file)
 		if err != nil {
@@ -123,23 +121,14 @@ func ParseDataFolder(folderPath string) (string, string, string, plotter.XYs, er
 				return "", "", "", nil, fmt.Errorf("files from same folder were not from same test")
 			}
 
-			fmt.Printf("dataPoints BEFORE: %#v\n", dataPoints)
-			fmt.Printf("curDataPoints: %#v\n", curDataPoints)
-
 			for u := range dataPoints {
 
 				// Add measured rtt from current data points set
 				// to already accumulated set.
 				dataPoints[u].Y += curDataPoints[u].Y
 			}
-
-			fmt.Printf("dataPoints AFTER: %#v\n", dataPoints)
 		}
-
-		fmt.Println()
 	}
-
-	fmt.Printf("dataPoints UNNORM: %#v\n", dataPoints)
 
 	for u := range dataPoints {
 
@@ -147,8 +136,6 @@ func ParseDataFolder(folderPath string) (string, string, string, plotter.XYs, er
 		// it over all performed runs.
 		dataPoints[u].Y = dataPoints[u].Y / numFiles
 	}
-
-	fmt.Printf("dataPoints NORMED: %#v\n", dataPoints)
 
 	return dataSubject, dataPlatform, dataDateRaw, dataPoints, nil
 }
