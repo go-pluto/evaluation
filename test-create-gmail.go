@@ -70,7 +70,15 @@ func main() {
 		log.Fatalf("Error during LOGIN as user %s: %s\n", config.Gmail.CreateTest.Name, err.Error())
 	}
 
-	if strings.HasPrefix(answer, "createA OK") != true {
+	// Receive next line from server.
+	nextAnswer, err := gmailC.Receive(false)
+	if err != nil {
+		log.Fatalf("Error receiving second part of LOGIN response: %s\n", err.Error())
+	}
+
+	answer = fmt.Sprintf("%s\r\n%s", answer, nextAnswer)
+
+	if strings.Contains(answer, "createA OK") != true {
 		log.Fatalf("Server responded unexpectedly to LOGIN: %s\n", answer)
 	}
 
@@ -151,7 +159,7 @@ func main() {
 	}
 
 	// Receive next line from server.
-	nextAnswer, err := gmailC.Receive(false)
+	nextAnswer, err = gmailC.Receive(false)
 	if err != nil {
 		log.Fatalf("Error receiving second part of LOGOUT response: %s\n", err.Error())
 	}
