@@ -1,4 +1,4 @@
-.PHONY: clean deps build folders tests append create delete store concur-append concur-create concur-delete concur-store plot
+.PHONY: clean deps build folders tests append create delete store concur-append concur-create concur-delete concur-store gmail plot
 
 clean:
 	go clean -i ./...
@@ -13,7 +13,7 @@ folders:
 	if [ ! -d "private" ]; then mkdir private; fi
 	chmod 0700 private
 
-tests: append create delete store concur-append concur-create concur-delete concur-store
+tests: append create delete store concur-append concur-create concur-delete concur-store gmail
 
 append:
 	CGO_ENABLED=0 go build -ldflags '-extldflags "-static"' test-append.go
@@ -38,6 +38,12 @@ concur-delete:
 
 concur-store:
 	CGO_ENABLED=0 go build -ldflags '-extldflags "-static"' test-store-concurrent.go
+
+gmail:
+	CGO_ENABLED=0 go build -ldflags '-extldflags "-static"' test-append-gmail.go
+	CGO_ENABLED=0 go build -ldflags '-extldflags "-static"' test-create-gmail.go
+	CGO_ENABLED=0 go build -ldflags '-extldflags "-static"' test-delete-gmail.go
+	CGO_ENABLED=0 go build -ldflags '-extldflags "-static"' test-store-gmail.go
 
 plot:
 	CGO_ENABLED=0 go build -ldflags '-extldflags "-static"' plot-results.go

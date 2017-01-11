@@ -15,6 +15,7 @@ import (
 type Config struct {
 	Pluto   Pluto
 	Dovecot Dovecot
+	Gmail   Gmail
 }
 
 // Pluto defines the relevant information in
@@ -39,12 +40,23 @@ type Dovecot struct {
 	Port           string
 	TLS            bool
 	CertLoc        string
-	KeyLoc         string
 	AppendTest     User
 	CreateTest     User
 	DeleteTest     User
 	StoreTest      User
 	ConcurrentTest ConcurrentTest
+}
+
+// Gmail bundles information needed to perform
+// evaluation tests against a Gmail server.
+type Gmail struct {
+	Server     string
+	Port       string
+	TLS        bool
+	AppendTest User
+	CreateTest User
+	DeleteTest User
+	StoreTest  User
 }
 
 // Distributor holds paths to self-signed certificates

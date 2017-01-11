@@ -36,3 +36,7 @@ test-append-concurrent
 test-create-concurrent
 test-delete-concurrent
 test-store-concurrent
+test-append-gmail
+test-create-gmail
+test-delete-gmail
+test-store-gmail
