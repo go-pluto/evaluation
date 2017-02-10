@@ -24,6 +24,8 @@ _testmain.go
 *.prof
 
 # Pluto specific excludes
+tmp-thesis
+tmp-thesis.go
 private/
 results/
 test-config-*.toml
