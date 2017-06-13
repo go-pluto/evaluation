@@ -1,8 +1,8 @@
 package utils
 
 import (
-	"strings"
 	"math/rand"
+	"strings"
 )
 
 // Functions
@@ -21,8 +21,7 @@ func GenerateString(strlen int) string {
 	return result
 }
 
-// GenerateString returns a random string from the alphabet [a-z,0-9] of the
-// length "strlen"
+// GenerateFlag returns a random choice of message flags.
 func GenerateFlags() (string, []string) {
 	// Define alphabet
 	flags := [...]string{"\\Seen", "\\Answered", "\\Flagged", "\\Deleted", "\\Draft"}
@@ -31,7 +30,7 @@ func GenerateFlags() (string, []string) {
 
 	// Generate an array of random but different indicies of length "numflags"
 	var genindex []int
-	for len(genindex) < numflags{
+	for len(genindex) < numflags {
 		index := rand.Intn(len(flags))
 		for i := 0; i < len(genindex); i++ {
 			if index == genindex[i] {
@@ -49,6 +48,6 @@ func GenerateFlags() (string, []string) {
 		genflags = append(genflags, flags[genindex[i]])
 	}
 
-	flagstring := "("+ strings.Join(genflags, " ") + ")"
+	flagstring := "(" + strings.Join(genflags, " ") + ")"
 	return flagstring, genflags
 }

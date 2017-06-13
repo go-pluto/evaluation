@@ -1,34 +1,43 @@
 package sessions
 
 import (
-    "fmt"
+	"fmt"
 	"math/rand"
-    "../utils"
 	"strconv"
+
+	"github.com/numbleroot/pluto-evaluation/imap-benchmark/utils"
 )
 
 // Structs
 
+// IMAPcommand contains the string of the command
+// and the corresponding arguments.
 type IMAPcommand struct {
-	Command        string
-	Arguments      []string
+	Command   string
+	Arguments []string
 }
 
+// Folder represents an imap folder with the
+// contained messages.
 type Folder struct {
-    Foldername  string
-    Messages    []Message
+	Foldername string
+	Messages   []Message
 }
 
+// Message represents a message, in this case
+// only the flags are relevant to generate a session.
 type Message struct {
-    Flags      []string
+	Flags []string
 }
 
 // Functions
 
-func removeDeleted(folder *Folder){
+// removeDeleted removes all messages with a \Deleted flag
+// from a folder.
+func removeDeleted(folder *Folder) {
 	for j := 0; j < len(folder.Messages); j++ {
 		for k := 0; k < len(folder.Messages[j].Flags); k++ {
-			if folder.Messages[j].Flags[k] == "\\Deleted"{
+			if folder.Messages[j].Flags[k] == "\\Deleted" {
 				folder.Messages = append(folder.Messages[:j], folder.Messages[j+1:]...)
 				j = j - 1
 				break
@@ -37,24 +46,20 @@ func removeDeleted(folder *Folder){
 	}
 }
 
-// TODO: proper documentation
-func GenerateSession(length int) []IMAPcommand {
-
-	//fmt.Printf("Session begin\n")
+// GenerateSession generates a random sequence of IMAPcommands.
+// The length of the sequence is between minlength and maxlength.
+func GenerateSession(minlength int, maxlength int) []IMAPcommand {
 
 	var commands []IMAPcommand
-
-	// Generate empty mailbox
 	var folders []Folder
-
 	selected := -1
 
 	// define the session length
-	sessionLength := rand.Intn(length)
+	sessionLength := rand.Intn(maxlength-minlength) + minlength
 
 	// generate the session content
 	for i := 0; i < sessionLength; i++ {
-		// Initialize command argument array
+
 		var arguments []string
 
 		if selected != -1 {
@@ -83,7 +88,7 @@ func GenerateSession(length int) []IMAPcommand {
 				case 0.0 <= r && r < 0.6:
 					// select the message
 					msgIndex := rand.Intn(len(folders[selected].Messages))
-					arguments = append(arguments, strconv.Itoa(msgIndex + 1))
+					arguments = append(arguments, strconv.Itoa(msgIndex+1))
 
 					flagstring, flags := utils.GenerateFlags()
 					arguments = append(arguments, flagstring)
@@ -143,7 +148,7 @@ func GenerateSession(length int) []IMAPcommand {
 				case 0.15 <= r && r < 0.3:
 					folderIndex := rand.Intn(len(folders))
 					foldername := folders[folderIndex].Foldername
-					folders = append(folders[:folderIndex], folders[folderIndex + 1:]...)
+					folders = append(folders[:folderIndex], folders[folderIndex+1:]...)
 					arguments = append(arguments, foldername)
 					commands = append(commands, IMAPcommand{Command: "DELETE", Arguments: arguments})
 
@@ -196,17 +201,5 @@ func GenerateSession(length int) []IMAPcommand {
 		commands = append(commands, IMAPcommand{Command: "DELETE", Arguments: arguments})
 	}
 
-	// TODO: delete me
-	// for i := 0; i < len(commands); i++ {
-	// 	fmt.Printf("Command: %s", commands[i].Command)
-	// 	for j := 0; j < len(commands[i].Arguments); j++ {
-	// 		fmt.Printf(" %s", commands[i].Arguments[j])
-	// 	}
-	// 	fmt.Printf("\n")
-	// }
-	// fmt.Printf("Session end\n")
-
-	// return IMAP Commands
-	// jobs <- j
 	return commands
 }

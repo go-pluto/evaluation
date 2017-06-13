@@ -1,41 +1,49 @@
 package config
 
 import (
-    "fmt"
+	"fmt"
 
-    "github.com/BurntSushi/toml"
+	"github.com/BurntSushi/toml"
 )
 
 // Structs
-// TODO: add proper comments
 
+// Config holds all information parsed from
+// supplied config file.
 type Config struct {
-	Server          Server
-	Settings        Settings
-	Session         Session
-    NormDist        [5]float64
+	Server   Server
+	Settings Settings
+	Session  Session
 }
 
+// The Server struct holds all server information
+// i.e. hostname and port.
 type Server struct {
-	Hostname       string
-	Port           string
-	TLS            bool
+	Hostname string
+	Port     string
+	TLS      bool // unused
 }
 
+// The Settings struct holds all global parameters
+// such as the number of threads and the seed.
 type Settings struct {
-	Threads        int
-	Seed           int64
-    Throttle       int
+	Threads  int
+	Sessions int
+	Seed     int64
+	Throttle int // unused
 }
 
+// The Session struct holds all information about the
+// length of a session.
 type Session struct {
-	Distribution   [5]float64
-    Length         int
+	Minlength int
+	Maxlength int
 }
 
 // Functions
 
-// LoadConfig takes in the path to the test config
+// LoadConfig decodes the config file and creates a
+// Config object.
 func LoadConfig(configFile string) (*Config, error) {
 
 	conf := new(Config)
@@ -44,21 +52,6 @@ func LoadConfig(configFile string) (*Config, error) {
 	if _, err := toml.DecodeFile(configFile, conf); err != nil {
 		return nil, fmt.Errorf("failed to read in TOML config file at '%s' with: %s\n", configFile, err.Error())
 	}
-
-    // calculate Distribution
-    var sum float64 = 0
-
-    for i := 0; i < 5; i++ {
-        sum = sum + conf.Session.Distribution[i]
-    }
-
-    var normdist [5]float64
-
-    for i := 0; i < 5; i++ {
-        normdist[i] = conf.Session.Distribution[i] / sum
-    }
-
-    conf.NormDist = normdist
 
 	return conf, nil
 }
