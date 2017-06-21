@@ -1,54 +1,49 @@
 # IMAP Benchmark
 
-A tool to generate IMAP traffic for [pluto](https://github.com/numbleroot/pluto), [Dovecot](https://www.dovecot.org/), and other IMAP services (like GMail).
+A tool to generate IMAP traffic for [pluto](https://github.com/numbleroot/pluto), [Dovecot](https://www.dovecot.org/), and other IMAP services (like Gmail).
 
-## Traffic Generateration
 
-The major difference to the previously introduced imap-evaluation is, that we now
-support *IMAP Sessions*. Sessions are sequences of IMAP commands that are can
-be executed consecutively. The commands are *more or less* reasonable.
+## Traffic Generation
 
-For the moment we only focus on **write** commands like:
-  * CREATE
-  * DELETE
-  * APPEND
-  * STORE
-  * EXPUNGE    
+The major difference to previously introduced `imap-evaluation` is, that we now support **IMAP Sessions**. Sessions are sequences of IMAP commands that are executed consecutively. The commands are *more or less* reasonable.
+
+For the moment we only focus on **state-changing** (i.e. write) commands like:
+* CREATE
+* DELETE
+* APPEND
+* STORE
+* EXPUNGE
+
 
 ## Setup
 
-To install imap-benchmark, please run
+To install `imap-benchmark`, please run
 
 ```
 $ go get -u github.com/numbleroot/pluto-evaluation
 ```
 
-and go in the imap-benchmark folder of the cloned repository. For the moment
-it is recommended to create a `results` folder for the logfiles by:
+and change into the `imap-benchmark` folder of the cloned repository. Modify the config file `test-config.toml` and the user data base `userdb.passwd`.
 
-```
-mkdir results
-```
 
-Next, modify the config file `test-config.toml` and the user data base `userdb.passwd`.
+## Usage
 
-## Using
-
-You can start benchmarking an imap service by running the imap-benchmark.go file.
+You can start benchmarking an IMAP service by running the `imap-benchmark.go` file.
 
 ```
 $ go run imap-benchmark.go
 ```
 
-Alternatively, you can provide paths for the config/userdb files:
+Alternatively, you can provide paths for config file and userdb:
 
 ```
-$ go run imap-benchmark.go --config=/var/config.toml --userdb=/var/private.passwd
+$ go run imap-benchmark.go --config /var/config.toml --userdb /var/private.passwd
 ```
+
 
 ## Logging
 
-All response times are collected in a logfile in the `results` folder.
+All response times are collected in a log file underneath the `results` folder.
 
 
 ## License

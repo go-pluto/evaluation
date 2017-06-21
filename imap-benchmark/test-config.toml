@@ -3,12 +3,12 @@
 [server]
 hostname = "localhost"
 port = "993"
-TLS = true #unused
+TLS = true # unused
 
 [settings]
 threads = 1
 sessions = 3
-throttle = 50 #unused
+throttle = 50 # unused
 seed = 3223372036854775808
 
 [session]
