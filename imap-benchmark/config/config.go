@@ -16,25 +16,26 @@ type Config struct {
 	Session  Session
 }
 
-// The Server struct holds all server information
-// i.e. hostname and port.
+// Server holds all server information
+// including hostname and port.
 type Server struct {
 	Hostname string
 	Port     string
-	TLS      bool // unused
+	TLS      bool
 }
 
-// The Settings struct holds all global parameters
-// such as the number of threads and the seed.
+// Settings holds all global parameters such
+// as the number of threads and the seed to
+// generate the involved IMAP commands.
 type Settings struct {
 	Threads  int
 	Sessions int
 	Seed     int64
-	Throttle int // unused
+	Throttle int
 }
 
-// The Session struct holds all information about the
-// length of a session.
+// Session holds all information about the
+// length of one session.
 type Session struct {
 	Minlength int
 	Maxlength int
@@ -46,11 +47,11 @@ type Session struct {
 // Config object.
 func LoadConfig(configFile string) (*Config, error) {
 
-	conf := new(Config)
+	conf := &Config{}
 
 	// Parse values from TOML file into struct.
 	if _, err := toml.DecodeFile(configFile, conf); err != nil {
-		return nil, fmt.Errorf("failed to read in TOML config file at '%s' with: %s\n", configFile, err.Error())
+		return nil, fmt.Errorf("failed to read in TOML config file at '%s' with: %v", configFile, err)
 	}
 
 	return conf, nil
