@@ -2,11 +2,12 @@ package worker
 
 import (
 	"bytes"
-	"crypto/tls"
 	"fmt"
 	"log"
 	"strings"
 	"time"
+
+	"crypto/tls"
 
 	"github.com/numbleroot/pluto/imap"
 )
@@ -56,13 +57,14 @@ func login(conn *imap.Connection, username string, password string, id int) {
 	}
 
 	for strings.Contains(answer, fmt.Sprintf("%dX OK", id)) != true {
+
 		nextAnswer, err := conn.Receive(false)
 		if err != nil {
 			log.Fatalf("Error during receiving: %s\n", err.Error())
 		}
+
 		answer = nextAnswer
 	}
-
 }
 
 // sendSimpleCommand sends an IMAP command string
@@ -98,6 +100,7 @@ func sendSimpleCommand(conn *imap.Connection, command string) int64 {
 		log.Printf("Server responded unexpectedly to command: %s\n", command)
 		log.Printf("Answer: %s\n", answer)
 	}
+
 	return (timeEnd - timeStart)
 }
 
@@ -150,6 +153,7 @@ func sendAppendCommand(conn *imap.Connection, command string, literal string) in
 
 // logout sends a loglout command to the server
 func logout(conn *imap.Connection, id int) {
+
 	// Log out.
 	err := conn.Send(false, fmt.Sprintf("%dZ LOGOUT", id))
 	if err != nil {
@@ -163,6 +167,7 @@ func logout(conn *imap.Connection, id int) {
 	}
 
 	for strings.Contains(answer, fmt.Sprintf("%dZ", id)) != true {
+
 		nextAnswer, err := conn.Receive(false)
 		if err != nil {
 			log.Fatalf("Error during LOGOUT: %s\n", err.Error())

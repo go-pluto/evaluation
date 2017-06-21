@@ -1,53 +1,64 @@
 package utils
 
 import (
-	"math/rand"
+	"fmt"
 	"strings"
+
+	"math/rand"
 )
 
 // Functions
 
-// GenerateString returns a random string from the alphabet [a-z,0-9] of the
-// length "strlen"
+// GenerateString returns a random string from the
+// alphabet [a-z,0-9] of length "strlen".
 func GenerateString(strlen int) string {
-	// Define alphabet
+
+	// Define alphabet.
 	const chars = "abcdefghijklmnopqrstuvwxyz0123456789"
 
 	result := ""
 	for i := 0; i < strlen; i++ {
 		index := rand.Intn(len(chars))
-		result += chars[index : index+1]
+		result += chars[index:(index + 1)]
 	}
+
 	return result
 }
 
 // GenerateFlag returns a random choice of message flags.
 func GenerateFlags() (string, []string) {
-	// Define alphabet
-	flags := [...]string{"\\Seen", "\\Answered", "\\Flagged", "\\Deleted", "\\Draft"}
 
-	numflags := 1 + rand.Intn(len(flags))
+	// Define alphabet.
+	flags := []string{"\\Seen", "\\Answered", "\\Flagged", "\\Deleted", "\\Draft"}
 
-	// Generate an array of random but different indicies of length "numflags"
-	var genindex []int
-	for len(genindex) < numflags {
+	numFlags := rand.Intn(len(flags)) + 1
+
+	// Generate an array of random but different indices.
+	var genIndex []int
+	for len(genIndex) < numFlags {
+
 		index := rand.Intn(len(flags))
-		for i := 0; i < len(genindex); i++ {
-			if index == genindex[i] {
+
+		for i := 0; i < len(genIndex); i++ {
+
+			if index == genIndex[i] {
 				index = rand.Intn(len(flags))
 				i = -1
 			}
 		}
-		genindex = append(genindex, index)
+
+		genIndex = append(genIndex, index)
 	}
 
-	// Add the corresponding flag of the previously generated index to the
-	// string array "genflags".
-	var genflags []string
-	for i := 0; i < len(genindex); i++ {
-		genflags = append(genflags, flags[genindex[i]])
+	// Add the corresponding flag of the previously generated
+	// index to the string array "genFlags".
+	var genFlags []string
+	for i := 0; i < len(genIndex); i++ {
+		genFlags = append(genFlags, flags[genIndex[i]])
 	}
 
-	flagstring := "(" + strings.Join(genflags, " ") + ")"
-	return flagstring, genflags
+	// Generate final flag string.
+	flagString := fmt.Sprintf("(%s)", strings.Join(genFlags, " "))
+
+	return flagString, genFlags
 }
