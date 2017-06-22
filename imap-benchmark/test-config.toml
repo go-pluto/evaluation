@@ -1,8 +1,7 @@
 # This is an example config file
 
 [server]
-hostname = "localhost"
-port = "993"
+addr = "localhost:993"
 TLS = true # unused
 
 [settings]

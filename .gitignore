@@ -42,3 +42,4 @@ test-append-gmail
 test-create-gmail
 test-delete-gmail
 test-store-gmail
+imap-benchmark

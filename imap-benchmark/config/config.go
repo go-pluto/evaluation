@@ -19,9 +19,8 @@ type Config struct {
 // Server holds all server information
 // including hostname and port.
 type Server struct {
-	Hostname string
-	Port     string
-	TLS      bool
+	Addr string
+	TLS  bool
 }
 
 // Settings holds all global parameters such
@@ -37,8 +36,8 @@ type Settings struct {
 // Session holds all information about the
 // length of one session.
 type Session struct {
-	Minlength int
-	Maxlength int
+	MinLength int
+	MaxLength int
 }
 
 // Functions

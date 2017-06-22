@@ -33,14 +33,17 @@ func LoadUsers(userdbFile string) ([]User, error) {
 
 	for _, line := range lines {
 
-		// Split line at ':{plain}'.
-		userData := bytes.Split(line, []byte(":{plain}"))
+		if len(line) > 0 {
 
-		// Append new User element with parsed data.
-		users = append(users, User{
-			Username: string(userData[0]),
-			Password: string(userData[1]),
-		})
+			// Split line at ':{plain}'.
+			userData := bytes.Split(line, []byte(":{plain}"))
+
+			// Append new User element with parsed data.
+			users = append(users, User{
+				Username: string(userData[0]),
+				Password: string(userData[1]),
+			})
+		}
 	}
 
 	return users, nil

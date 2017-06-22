@@ -11,12 +11,15 @@ import (
 // Functions
 
 // CreateLog checks for existence of a 'results'
-// folder in supplied dir and creates and opens
-// a log file for the current run.
-func CreateLog(dir string) (*os.File, error) {
+// folder in current directory and creates and
+// opens a log file for the current run.
+func CreateLog() (*os.File, error) {
 
-	a, _ := filepath.Abs(".")
-	fmt.Printf("here: '%s'", a)
+	// Retrieve current directory.
+	dir, err := filepath.Abs(".")
+	if err != nil {
+		return nil, err
+	}
 
 	// Path to results directory.
 	resultsDir := filepath.Join(dir, "results")

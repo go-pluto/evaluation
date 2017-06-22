@@ -1,13 +1,8 @@
 package main
 
 import (
-	"bufio"
 	"flag"
-	"fmt"
 	"log"
-	"os"
-	"strings"
-	"time"
 
 	"math/rand"
 
@@ -26,7 +21,7 @@ func main() {
 	flag.Parse()
 
 	// Read configuration from file.
-	config, err := config.LoadConfig(*configFlag)
+	conf, err := config.LoadConfig(*configFlag)
 	if err != nil {
 		log.Fatalf("Error loading config: %v", err)
 	}
@@ -47,7 +42,7 @@ func main() {
 	defer logFile.Sync()
 
 	// Seed the random number generator.
-	rand.Seed(config.Settings.Seed)
+	rand.Seed(conf.Settings.Seed)
 
 	// Create the buffered channels. Channel "jobs" is for each session,
 	// channel "logger" for the logged parameters (e.g. response time).
@@ -55,12 +50,12 @@ func main() {
 	logger := make(chan []string, 100)
 
 	// Start the worker pool.
-	for w := 1; w <= config.Settings.Threads; w++ {
-		go worker.Worker(w, config, jobs, logger)
+	for w := 1; w <= conf.Settings.Threads; w++ {
+		go worker.Worker(w, conf, jobs, logger)
 	}
 
 	// Assign jobs sessions.
-	for j := 1; j <= config.Settings.Sessions; j++ {
+	for j := 1; j <= conf.Settings.Sessions; j++ {
 
 		// Randomly choose a user.
 		i := rand.Intn(len(users))
@@ -70,17 +65,17 @@ func main() {
 			User:     users[i].Username,
 			Password: users[i].Password,
 			ID:       j,
-			Commands: sessions.GenerateSession(config.Session.Minlength, config.Session.Maxlength),
+			Commands: sessions.GenerateSession(conf.Session.MinLength, conf.Session.MaxLength),
 		}
 	}
 
-	log.Printf("Generated %d sessions", config.Settings.Sessions)
+	log.Printf("Generated %d sessions", conf.Settings.Sessions)
 
 	// Close jobs channel to stop all worker routines.
 	close(jobs)
 
 	// Collect results and write them to disk.
-	for a := 1; a <= config.Settings.Sessions; a++ {
+	for a := 1; a <= conf.Settings.Sessions; a++ {
 
 		logline := <-logger
 		log.Printf("Finished %s", logline[1])
