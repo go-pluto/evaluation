@@ -1,190 +1,174 @@
 package worker
 
 import (
-	"bytes"
+	"bufio"
 	"fmt"
-	"log"
 	"strings"
 	"time"
 
 	"crypto/tls"
-
-	"github.com/numbleroot/pluto/imap"
 )
+
+// Structs
+
+// Conn encapsulates connection adapters to write
+// and read from an active TLS connection.
+type Conn struct {
+	c *tls.Conn
+	r *bufio.Reader
+}
 
 // Functions
 
-// dialServer creates a tls secured connection to
-// the server with the given hostname and port.
-func dialServer(hostname string, port string) *tls.Conn {
+// login sends a LOGIN command with the given
+// username/password combination on given TLS
+// connection.
+func (c *Conn) login(username string, password string, id int) error {
 
-	server := fmt.Sprintf("%s:%s", hostname, port)
-
-	tlsConfig := &tls.Config{
-		// Unfortunately, we currently need to accept this.
-		InsecureSkipVerify: true,
-	}
-
-	conn, err := tls.Dial("tcp", server, tlsConfig)
-	if err != nil {
-		log.Fatalf("Was unable to connect to remote server: %s\n", err.Error())
-	}
-
-	return conn
-}
-
-// login sends a login command with the given
-// username/password combination on the given
-// tls connection.
-func login(conn *imap.Connection, username string, password string, id int) {
+	okAnswer := fmt.Sprintf("%dX OK", id)
 
 	// Consume mandatory IMAP greeting.
-	_, err := conn.Receive(false)
+	_, err := c.r.ReadString('\n')
 	if err != nil {
-		log.Fatalf("Error during receiving initial server greeting: %s\n", err.Error())
+		return fmt.Errorf("error during receiving initial server greeting: %v", err)
 	}
 
-	err = conn.Send(false, fmt.Sprintf("%dX LOGIN %s %s", id, username, password))
+	// Send LOGIN command with parameters.
+	_, err = fmt.Fprintf(c.c, "%dX LOGIN %s %s\r\n", id, username, password)
 	if err != nil {
-		log.Fatalf("Sending LOGIN to server failed with: %s\n", err.Error())
+		return fmt.Errorf("sending LOGIN to server failed with: %v", err)
 	}
 
 	// Wait for success message.
-	answer, err := conn.Receive(false)
+	answer, err := c.r.ReadString('\n')
 	if err != nil {
-		log.Fatalf("Error during LOGIN as user: %s", err.Error())
-		log.Fatalf("received: %s", answer)
+		return fmt.Errorf("error receiving answer to LOGIN as user: %v", err)
 	}
 
-	for strings.Contains(answer, fmt.Sprintf("%dX OK", id)) != true {
+	// Check for success indicator in answer.
+	for !strings.Contains(answer, okAnswer) {
 
-		nextAnswer, err := conn.Receive(false)
+		nextAnswer, err := c.r.ReadString('\n')
 		if err != nil {
-			log.Fatalf("Error during receiving: %s\n", err.Error())
+			return fmt.Errorf("error during receiving nextAnswer: %v", err)
 		}
 
 		answer = nextAnswer
 	}
+
+	return nil
 }
 
 // sendSimpleCommand sends an IMAP command string
-// on the given connection "con". The time between
-// the send of the message and the receive of
-// the imap confirmation will be counted and returned.
-func sendSimpleCommand(conn *imap.Connection, command string) int64 {
+// on given connection. The time between sending
+// the message and receiving the corresponding
+// confirmation will be measured and returned.
+func (c *Conn) sendSimpleCommand(command string) (int64, error) {
 
+	okAnswer := strings.Split(command, " ")[0]
+
+	// Start time taken here.
 	timeStart := time.Now().UnixNano()
 
-	err := conn.Send(false, command)
+	_, err := fmt.Fprintf(c.c, "%s\r\n", command)
 	if err != nil {
-		log.Fatalf("Error during sending: %s\n", err.Error())
+		return -1, fmt.Errorf("error during sending: %v", err)
 	}
 
-	answer, err := conn.Receive(false)
+	answer, err := c.r.ReadString('\n')
 	if err != nil {
-		log.Fatalf("Error during receiving: %s\n", err.Error())
+		return -1, fmt.Errorf("error during receiving: %v", err)
 	}
 
-	for strings.HasPrefix(answer, strings.Split(command, " ")[0]) != true {
-		nextAnswer, err := conn.Receive(false)
+	for !strings.HasPrefix(answer, okAnswer) {
+
+		nextAnswer, err := c.r.ReadString('\n')
 		if err != nil {
-			log.Fatalf("Error during receiving: %s\n", err.Error())
+			return -1, fmt.Errorf("error during receiving: %v", err)
 		}
 
 		answer = nextAnswer
 	}
 
+	// End time taken here.
 	timeEnd := time.Now().UnixNano()
 
-	if strings.Contains(answer, "OK") != true {
-		log.Printf("Server responded unexpectedly to command: %s\n", command)
-		log.Printf("Answer: %s\n", answer)
+	if !strings.Contains(answer, "OK") {
+		return -1, fmt.Errorf("server responded unexpectedly to command: %s", command)
 	}
 
-	return (timeEnd - timeStart)
+	return (timeEnd - timeStart), nil
 }
 
 // sendAppendCommand sends an IMAP command string
 // that contains an APPEND command on the given
-// connection "con". The time between the send
-// of the message and the receive of the imap confirmation
+// connection "con". The time between the send of
+// the message and the receive of the imap confirmation
 // will be counted and returned.
-func sendAppendCommand(conn *imap.Connection, command string, literal string) int64 {
+func (c *Conn) sendAppendCommand(command string, literal string) (int64, error) {
 
+	// Start time taken here.
 	timeStart := time.Now().UnixNano()
 
-	err := conn.Send(false, command)
+	_, err := fmt.Fprintf(c.c, "%s\r\n", command)
 	if err != nil {
-		log.Fatalf("Error during sending: %s\n", err.Error())
+		return -1, fmt.Errorf("error during sending: %v", err)
 	}
 
-	answer, err := conn.Receive(false)
+	answer, err := c.r.ReadString('\n')
 	if err != nil {
-		log.Fatalf("Error during receiving: %s\n", err.Error())
+		return -1, fmt.Errorf("error during receiving: %v", err)
 	}
 
-	// TODO: check validity of the server's response
-	// if answer != "+ go ahead" {
-	// 	log.Fatalf("Did not receive continuation command from server\n")
-	// }
-
-	// Send mail message without additional newline.
-	appendMsg := bytes.NewBufferString(literal)
-	_, err = fmt.Fprintf(conn.OutConn, "%s\r\n", appendMsg)
-	if err != nil {
-		log.Fatalf("Sending mail message to server failed with: %s\n", err.Error())
+	if (answer != "+ OK\r\n") && (answer != "+ Ready for literal data\r\n") {
+		return -1, fmt.Errorf("did not receive continuation command from server")
 	}
 
-	// Receive answer to message transfer.
-	answer, err = conn.Receive(false)
+	// Send message literal.
+	_, err = fmt.Fprintf(c.c, "%s", literal)
 	if err != nil {
-		log.Fatalf("Error during receiving response to APPEND: %s\n", err.Error())
+		return -1, fmt.Errorf("sending mail message to server failed with: %v", err)
 	}
 
+	answer, err = c.r.ReadString('\n')
+	if err != nil {
+		return -1, fmt.Errorf("error during receiving response to APPEND: %v", err)
+	}
+
+	// End time taken here.
 	timeEnd := time.Now().UnixNano()
 
-	if strings.Contains(answer, "OK") != true {
-		log.Printf("Server responded unexpectedly to command: %s\n", command)
-		log.Printf("Answer: %s\n", answer)
+	if !strings.Contains(answer, "OK") {
+		return -1, fmt.Errorf("server responded unexpectedly to command: %s", command)
 	}
 
-	return (timeEnd - timeStart)
+	return (timeEnd - timeStart), nil
 }
 
-// logout sends a loglout command to the server
-func logout(conn *imap.Connection, id int) {
+// logout sends a LOGOUT command to the server.
+func (c *Conn) logout(id int) error {
 
-	// Log out.
-	err := conn.Send(false, fmt.Sprintf("%dZ LOGOUT", id))
+	okAnswer := fmt.Sprintf("%dZ", id)
+
+	_, err := fmt.Fprintf(c.c, "%dZ LOGOUT\r\n", id)
 	if err != nil {
-		log.Fatalf("Error during LOGOUT: %s\n", err.Error())
+		return fmt.Errorf("error during LOGOUT: %v", err)
 	}
 
-	// Receive first part of answer.
-	answer, err := conn.Receive(false)
+	answer, err := c.r.ReadString('\n')
 	if err != nil {
-		log.Fatalf("Error receiving first part of LOGOUT response: %s\n", err.Error())
+		return fmt.Errorf("error receiving first part of LOGOUT response: %v", err)
 	}
 
-	for strings.Contains(answer, fmt.Sprintf("%dZ", id)) != true {
+	for !strings.Contains(answer, okAnswer) {
 
-		nextAnswer, err := conn.Receive(false)
+		nextAnswer, err := c.r.ReadString('\n')
 		if err != nil {
-			log.Fatalf("Error during LOGOUT: %s\n", err.Error())
+			return fmt.Errorf("error during LOGOUT: %v", err)
 		}
 
 		answer = nextAnswer
 	}
 
-	// Receive next line from server.
-	// nextAnswer, err := conn.Receive(false)
-	// if err != nil {
-	//     log.Fatalf("Error receiving second part of LOGOUT response: %s\n", err.Error())
-	// }
-	//
-	// answer = fmt.Sprintf("%s\r\n%s", answer, nextAnswer)
-	//
-	// if strings.Contains(answer, "(Success)") != true {
-	//     log.Fatalf("Server responded unexpectedly to LOGOUT: %s\n", answer)
-	// }
+	return nil
 }

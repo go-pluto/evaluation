@@ -3,10 +3,12 @@ package worker
 import (
 	"bufio"
 	"fmt"
+	"log"
+
+	"crypto/tls"
 
 	"github.com/numbleroot/pluto-evaluation/imap-benchmark/config"
 	"github.com/numbleroot/pluto-evaluation/imap-benchmark/sessions"
-	"github.com/numbleroot/pluto/imap"
 )
 
 // Structs
@@ -18,7 +20,7 @@ type Session struct {
 	User     string
 	Password string
 	ID       int
-	Commands []sessions.IMAPcommand
+	Commands []sessions.IMAPCommand
 }
 
 // Functions
@@ -39,66 +41,107 @@ func Worker(id int, config *config.Config, jobs chan Session, logger chan<- []st
 		output = append(output, "---- starting commands ----")
 
 		// Connect to remote server.
-		connection := dialServer(config.Server.Hostname, config.Server.Port)
-
-		conn := &imap.Connection{
-			OutConn:   connection,
-			OutReader: bufio.NewReader(connection),
+		tlsConn, err := tls.Dial("tcp", config.Server.Addr, &tls.Config{
+			InsecureSkipVerify: true,
+		})
+		if err != nil {
+			log.Fatalf("Unable to connect to remote server %s: %v", config.Server.Addr, err)
 		}
 
-		login(conn, job.User, job.Password, id)
+		conn := &Conn{
+			c: tlsConn,
+			r: bufio.NewReader(tlsConn),
+		}
+
+		// Login user for following IMAP commands session.
+		conn.login(job.User, job.Password, id)
 
 		for i := 0; i < len(job.Commands); i++ {
 
 			switch job.Commands[i].Command {
 
 			case "CREATE":
+
 				command := fmt.Sprintf("%dX%d CREATE %dX%s", id, i, id, job.Commands[i].Arguments[0])
-				respTime := sendSimpleCommand(conn, command)
+
+				respTime, err := conn.sendSimpleCommand(command)
+				if err != nil {
+					log.Fatal(err)
+				}
+
 				output = append(output, fmt.Sprintf("CREATE %d", respTime))
-				// log.Println("creating folder")
 
 			case "DELETE":
+
 				command := fmt.Sprintf("%dX%d DELETE %dX%s", id, i, id, job.Commands[i].Arguments[0])
-				respTime := sendSimpleCommand(conn, command)
+
+				respTime, err := conn.sendSimpleCommand(command)
+				if err != nil {
+					log.Fatal(err)
+				}
+
 				output = append(output, fmt.Sprintf("DELETE %d", respTime))
-				// log.Println("deleting folder")
 
 			case "APPEND":
+
 				command := fmt.Sprintf("%dX%d APPEND %dX%s %s %s", id, i, id, job.Commands[i].Arguments[0], job.Commands[i].Arguments[1], job.Commands[i].Arguments[2])
-				respTime := sendAppendCommand(conn, command, job.Commands[i].Arguments[3])
+
+				respTime, err := conn.sendAppendCommand(command, job.Commands[i].Arguments[3])
+				if err != nil {
+					log.Fatal(err)
+				}
+
 				output = append(output, fmt.Sprintf("APPEND %d", respTime))
-				// log.Println("appending message")
 
 			case "SELECT":
+
 				command := fmt.Sprintf("%dX%d SELECT %dX%s", id, i, id, job.Commands[i].Arguments[0])
-				respTime := sendSimpleCommand(conn, command)
+
+				respTime, err := conn.sendSimpleCommand(command)
+				if err != nil {
+					log.Fatal(err)
+				}
+
 				output = append(output, fmt.Sprintf("SELECT %d", respTime))
-				// log.Println("selecting folder")
 
 			case "STORE":
+
 				command := fmt.Sprintf("%dX%d STORE %s FLAGS %s", id, i, job.Commands[i].Arguments[0], job.Commands[i].Arguments[1])
-				respTime := sendSimpleCommand(conn, command)
+
+				respTime, err := conn.sendSimpleCommand(command)
+				if err != nil {
+					log.Fatal(err)
+				}
+
 				output = append(output, fmt.Sprintf("STORE %d", respTime))
-				// log.Println("storing message")
 
 			case "EXPUNGE":
+
 				command := fmt.Sprintf("%dX%d EXPUNGE", id, i)
-				respTime := sendSimpleCommand(conn, command)
+
+				respTime, err := conn.sendSimpleCommand(command)
+				if err != nil {
+					log.Fatal(err)
+				}
+
 				output = append(output, fmt.Sprintf("EXPUNGE %d", respTime))
-				// log.Println("running expunge")
 
 			case "CLOSE":
+
 				command := fmt.Sprintf("%dX%d CLOSE", id, i)
-				respTime := sendSimpleCommand(conn, command)
+
+				respTime, err := conn.sendSimpleCommand(command)
+				if err != nil {
+					log.Fatal(err)
+				}
+
 				output = append(output, fmt.Sprintf("CLOSE %d", respTime))
-				// log.Println("closing folder")
 			}
 		}
 
 		output = append(output, "########################")
 
-		logout(conn, id)
+		conn.logout(id)
 
 		logger <- output
 	}

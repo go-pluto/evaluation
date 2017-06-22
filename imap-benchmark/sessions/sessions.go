@@ -51,30 +51,30 @@ func removeDeleted(folder *Folder) {
 }
 
 // GenerateSession generates a random sequence of IMAPCommands.
-// The length of the sequence is between minlength and maxlength.
-func GenerateSession(minlength int, maxlength int) []IMAPCommand {
+// The length of the sequence is between minLength and maxLength.
+func GenerateSession(minLength int, maxLength int) []IMAPCommand {
 
+	selected := -1
 	var commands []IMAPCommand
 	var folders []Folder
-	selected := -1
 
-	// define the session length
-	sessionLength := rand.Intn(maxlength-minlength) + minlength
+	// Define session length.
+	sessionLength := rand.Intn((maxLength - minLength)) + minLength
 
-	// generate the session content
+	// Generate the session content.
 	for i := 0; i < sessionLength; i++ {
 
 		var arguments []string
 
 		if selected != -1 {
 
-			// Equals IMAPs "SELECTED" state. Possible IMAP commands are:
-			// STORE, EXPUNGE, CLOSE
+			// Equals IMAP's Selected state. Possible IMAP commands are:
+			// STORE, EXPUNGE, CLOSE.
 
 			if len(folders[selected].Messages) == 0 {
 
-				// In case no message is present in the folder, only EXPUNGE and
-				// CLOSE are possible commands.
+				// In case no message is present in the folder, only EXPUNGE
+				// and CLOSE are possible commands.
 
 				r := rand.Float64()
 
@@ -88,15 +88,14 @@ func GenerateSession(minlength int, maxlength int) []IMAPCommand {
 
 			} else {
 
-				// In SELECTED state and messages are present in the selected
-				// folder. Possible IMAP commands are:
-				// STORE, EXPUNGE, CLOSE
+				// In Selected state and messages are present in selected folder.
+				// Possible IMAP commands are: STORE, EXPUNGE, CLOSE.
 
 				r := rand.Float64()
 
 				switch {
 				case 0.0 <= r && r < 0.6:
-					// select the message
+					// Select message.
 					msgIndex := rand.Intn(len(folders[selected].Messages))
 					arguments = append(arguments, strconv.Itoa(msgIndex+1))
 
@@ -120,14 +119,13 @@ func GenerateSession(minlength int, maxlength int) []IMAPCommand {
 
 		} else {
 
-			// Equals IMAPs "Authenticated" state. No folder is selected.
-			// Possible IMAP commands are:
-			// CREATE, DELETE, APPEND, SELECT
+			// Equals IMAP's Authenticated state. No folder is selected.
+			// Possible IMAP commands are: CREATE, DELETE, APPEND, SELECT.
 
 			if len(folders) == 0 {
 
-				// If no folders are present in the mailbox, the only possible
-				// IMAP command is CREATE.
+				// If no folders are present in the mailbox, the
+				// only possible IMAP command is CREATE.
 
 				var messages []Message
 
@@ -149,7 +147,8 @@ func GenerateSession(minlength int, maxlength int) []IMAPCommand {
 				case 0.0 <= r && r < 0.15:
 					initFoldername := utils.GenerateString(8)
 
-					// Rerandom in case the generated foldername already exists in this session
+					// Rerandom in case the generated folder name
+					// already exists in this session.
 					for j := 0; j < len(folders); j++ {
 						if initFoldername == folders[j].Foldername {
 							initFoldername = utils.GenerateString(8)
@@ -174,22 +173,22 @@ func GenerateSession(minlength int, maxlength int) []IMAPCommand {
 					commands = append(commands, IMAPCommand{Command: "DELETE", Arguments: arguments})
 
 				case 0.3 <= r && r < 0.9:
-					// choose the folder
+					// Choose the folder.
 					folderIndex := rand.Intn(len(folders))
 
-					// lookup the foldername and add it to the arguments list
+					// Lookup folder name and add it to the arguments list.
 					foldername := folders[folderIndex].Foldername
 					arguments = append(arguments, foldername)
 
-					// generate the flags of the message
+					// Generate flags of the message.
 					flagstring, flags := utils.GenerateFlags()
 					arguments = append(arguments, flagstring)
 
-					//generate the date/time string - OPTIONAL
+					// Generate date/time string - OPTIONAL.
 					arguments = append(arguments, "{310}")
 
-					// generate the message
-					// TODO: replace with a proper message generator
+					// Generate message.
+					// TODO: Replace with a proper message generator.
 					var msg string
 					msg = fmt.Sprintf("Date: Mon, 7 Feb 1994 21:52:25 -0800 (PST)\r\nFrom: Fred Foobar <foobar@Blurdybloop.COM>\r\nSubject: afternoon meeting\r\nTo: mooch@owatagu.siam.edu\r\nMessage-Id: <B27397-0100000@Blurdybloop.COM>\r\nMIME-Version: 1.0\r\nContent-Type: TEXT/PLAIN; CHARSET=US-ASCII\r\n\r\nHello Joe, do you think we can meet at 3:30 tomorrow?\r\n")
 
@@ -210,13 +209,13 @@ func GenerateSession(minlength int, maxlength int) []IMAPCommand {
 		}
 	}
 
-	// Exit the Selected state if the last command was SELECT
+	// Exit Selected state if the last command was SELECT.
 	if selected != -1 {
 		commands = append(commands, IMAPCommand{Command: "CLOSE"})
 		selected = -1
 	}
 
-	// Finish the session by deleting all created folders.
+	// Finish session by deleting all created folders.
 	for i := 0; i < len(folders); i++ {
 		var arguments []string
 		arguments = append(arguments, folders[i].Foldername)
