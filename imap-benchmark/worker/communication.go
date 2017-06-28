@@ -93,11 +93,11 @@ func (c *Conn) sendSimpleCommand(command string) (int64, error) {
 	// End time taken here.
 	timeEnd := time.Now().UnixNano()
 
-	if !strings.Contains(answer, "OK") {
-		return -1, fmt.Errorf("server responded unexpectedly to command: %s", command)
-	}
-
+	// if !strings.Contains(answer, "OK") {
+	// 	return -1, fmt.Errorf("server responded unexpectedly to command: %s", command)
+	// }
 	return (timeEnd - timeStart), nil
+
 }
 
 // sendAppendCommand sends an IMAP command string
@@ -125,7 +125,7 @@ func (c *Conn) sendAppendCommand(command string, literal string) (int64, error) 
 	}
 
 	// Send message literal.
-	_, err = fmt.Fprintf(c.c, "%s", literal)
+	_, err = fmt.Fprintf(c.c, "%s\r\n", literal)
 	if err != nil {
 		return -1, fmt.Errorf("sending mail message to server failed with: %v", err)
 	}
@@ -141,8 +141,8 @@ func (c *Conn) sendAppendCommand(command string, literal string) (int64, error) 
 	if !strings.Contains(answer, "OK") {
 		return -1, fmt.Errorf("server responded unexpectedly to command: %s", command)
 	}
-
 	return (timeEnd - timeStart), nil
+
 }
 
 // logout sends a LOGOUT command to the server.
