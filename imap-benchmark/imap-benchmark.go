@@ -3,6 +3,7 @@ package main
 import (
 	"flag"
 	"log"
+	"time"
 
 	"math/rand"
 
@@ -78,11 +79,22 @@ func main() {
 	for a := 1; a <= conf.Settings.Sessions; a++ {
 
 		logline := <-logger
-		log.Printf("Finished %s", logline[1])
+		// log.Printf("Finished %s", logline[1])
 
 		for i := 0; i < len(logline); i++ {
 			logFile.WriteString(logline[i])
+			log.Printf("%s\n", logline[i])
 			logFile.WriteString("\n")
 		}
+	}
+
+	log.Printf("going to sleep \n")
+
+	for ; ; {
+	//An example goroutine that might run
+	//indefinitely. In actual implementation
+	//it might block on a chanel receive instead
+	//of time.Sleep for example.
+		time.Sleep(time.Second)
 	}
 }

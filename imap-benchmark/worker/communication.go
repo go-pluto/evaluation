@@ -77,21 +77,26 @@ func (c *Conn) sendSimpleCommand(command string) (int64, error) {
 
 	answer, err := c.r.ReadString('\n')
 	if err != nil {
-		return -1, fmt.Errorf("error during receiving: %v", err)
+		return -1, fmt.Errorf("error during receiving after first imap command: %v", err)
 	}
+
+	//fmt.Printf("%s", answer)
 
 	for !strings.HasPrefix(answer, okAnswer) {
 
 		nextAnswer, err := c.r.ReadString('\n')
 		if err != nil {
-			return -1, fmt.Errorf("error during receiving: %v", err)
+			return -1, fmt.Errorf("error during receiving after other imap command: %v", err)
 		}
 
 		answer = nextAnswer
+		//fmt.Printf("%s", answer)
 	}
 
 	// End time taken here.
 	timeEnd := time.Now().UnixNano()
+
+	// TODO: implement this check!
 
 	// if !strings.Contains(answer, "OK") {
 	// 	return -1, fmt.Errorf("server responded unexpectedly to command: %s", command)
@@ -107,6 +112,8 @@ func (c *Conn) sendSimpleCommand(command string) (int64, error) {
 // will be counted and returned.
 func (c *Conn) sendAppendCommand(command string, literal string) (int64, error) {
 
+	okAnswer := strings.Split(command, " ")[0]
+
 	// Start time taken here.
 	timeStart := time.Now().UnixNano()
 
@@ -117,7 +124,7 @@ func (c *Conn) sendAppendCommand(command string, literal string) (int64, error) 
 
 	answer, err := c.r.ReadString('\n')
 	if err != nil {
-		return -1, fmt.Errorf("error during receiving: %v", err)
+		return -1, fmt.Errorf("error during receiving after append command: %v", err)
 	}
 
 	if (answer != "+ OK\r\n") && (answer != "+ Ready for literal data\r\n") {
@@ -134,6 +141,17 @@ func (c *Conn) sendAppendCommand(command string, literal string) (int64, error) 
 	if err != nil {
 		return -1, fmt.Errorf("error during receiving response to APPEND: %v", err)
 	}
+
+	for !strings.HasPrefix(answer, okAnswer) {
+
+		nextAnswer, err := c.r.ReadString('\n')
+		if err != nil {
+			return -1, fmt.Errorf("error during receiving after append literal: %v", err)
+		}
+
+		answer = nextAnswer
+	}
+
 
 	// End time taken here.
 	timeEnd := time.Now().UnixNano()
