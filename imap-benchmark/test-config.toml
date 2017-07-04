@@ -2,14 +2,14 @@
 # This is an example config file
 
 [server]
-addr = "localhost:11111"
+addr = "localhost:1993"
 TLS = true # unused
 
 [settings]
 threads = 1
-sessions = 80
+sessions = 5
 throttle = 50 # unused
-seed = 3223372035854775808
+seed = 3223362035854775808
 
 [session]
 minlength = 15
