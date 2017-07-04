@@ -1,4 +1,4 @@
-# Pluto evaluation
+# evaluation
 
 Collection of test scripts for evaluating [pluto](https://github.com/go-pluto/pluto)'s performance compared to [Dovecot](https://www.dovecot.org).
 
