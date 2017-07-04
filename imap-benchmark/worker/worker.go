@@ -7,6 +7,8 @@ import (
 
 	"crypto/tls"
 
+	"github.com/golang/glog"
+
 	"github.com/numbleroot/pluto-evaluation/imap-benchmark/config"
 	"github.com/numbleroot/pluto-evaluation/imap-benchmark/sessions"
 )
@@ -55,8 +57,11 @@ func Worker(id int, config *config.Config, jobs chan Session, logger chan<- []st
 
 		// Login user for following IMAP commands session.
 		conn.login(job.User, job.Password, id)
+		glog.V(2).Info("LOGIN successful, user: ", job.User, " pw: ", job.Password)
 
 		for i := 0; i < len(job.Commands); i++ {
+
+			glog.V(2).Info("Sending ", job.Commands[i].Command)
 
 			switch job.Commands[i].Command {
 
@@ -84,7 +89,8 @@ func Worker(id int, config *config.Config, jobs chan Session, logger chan<- []st
 
 			case "APPEND":
 
-				command := fmt.Sprintf("%dX%d APPEND %dX%s %s %s", id, i, id, job.Commands[i].Arguments[0], job.Commands[i].Arguments[1], job.Commands[i].Arguments[2])
+				// command := fmt.Sprintf("%dX%d APPEND %dX%s %s %s", id, i, id, job.Commands[i].Arguments[0], job.Commands[i].Arguments[1], job.Commands[i].Arguments[2])
+				command := fmt.Sprintf("%dX%d APPEND %dX%s %s", id, i, id, job.Commands[i].Arguments[0], job.Commands[i].Arguments[2])
 
 				respTime, err := conn.sendAppendCommand(command, job.Commands[i].Arguments[3])
 				if err != nil {
@@ -95,7 +101,13 @@ func Worker(id int, config *config.Config, jobs chan Session, logger chan<- []st
 
 			case "SELECT":
 
-				command := fmt.Sprintf("%dX%d SELECT %dX%s", id, i, id, job.Commands[i].Arguments[0])
+				var command string
+
+				if job.Commands[i].Arguments[0] == "INBOX" {
+					command = fmt.Sprintf("%dX%d SELECT %s", id, i, job.Commands[i].Arguments[0])
+				} else {
+					command = fmt.Sprintf("%dX%d SELECT %dX%s", id, i, id, job.Commands[i].Arguments[0])
+				}
 
 				respTime, err := conn.sendSimpleCommand(command)
 				if err != nil {
@@ -137,11 +149,14 @@ func Worker(id int, config *config.Config, jobs chan Session, logger chan<- []st
 
 				output = append(output, fmt.Sprintf("CLOSE %d", respTime))
 			}
+
+			glog.V(2).Info(job.Commands[i].Command, " finished.")
 		}
 
 		output = append(output, "########################")
 
 		conn.logout(id)
+		glog.V(2).Info("LOGOUT successful, user: ", job.User, " pw: ", job.Password)
 
 		logger <- output
 	}

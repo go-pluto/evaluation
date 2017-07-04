@@ -2,11 +2,10 @@ package main
 
 import (
 	"flag"
-	"log"
-	"time"
 
 	"math/rand"
 
+	"github.com/golang/glog"
 	"github.com/numbleroot/pluto-evaluation/imap-benchmark/config"
 	"github.com/numbleroot/pluto-evaluation/imap-benchmark/sessions"
 	"github.com/numbleroot/pluto-evaluation/imap-benchmark/worker"
@@ -24,20 +23,20 @@ func main() {
 	// Read configuration from file.
 	conf, err := config.LoadConfig(*configFlag)
 	if err != nil {
-		log.Fatalf("Error loading config: %v", err)
+		glog.Fatalf("Error loading config: %v", err)
 	}
 
 	// Load users from userdb file.
 	users, err := config.LoadUsers(*userdbFlag)
 	if err != nil {
-		log.Fatalf("Error loading users from '%s' file: %v", *userdbFlag, err)
+		glog.Fatalf("Error loading users from '%s' file: %v", *userdbFlag, err)
 	}
 
 	// Check results folder existence and create
 	// a log file for this run.
 	logFile, err := config.CreateLog()
 	if err != nil {
-		log.Fatalf("Failed to create log file: %v", err)
+		glog.Fatalf("Failed to create log file: %v", err)
 	}
 	defer logFile.Close()
 	defer logFile.Sync()
@@ -70,7 +69,7 @@ func main() {
 		}
 	}
 
-	log.Printf("Generated %d sessions", conf.Settings.Sessions)
+	glog.Infof("Generated %d sessions.", conf.Settings.Sessions)
 
 	// Close jobs channel to stop all worker routines.
 	close(jobs)
@@ -79,22 +78,11 @@ func main() {
 	for a := 1; a <= conf.Settings.Sessions; a++ {
 
 		logline := <-logger
-		// log.Printf("Finished %s", logline[1])
 
 		for i := 0; i < len(logline); i++ {
 			logFile.WriteString(logline[i])
-			log.Printf("%s\n", logline[i])
+			glog.Infof("%s", logline[i])
 			logFile.WriteString("\n")
 		}
-	}
-
-	log.Printf("going to sleep \n")
-
-	for ; ; {
-	//An example goroutine that might run
-	//indefinitely. In actual implementation
-	//it might block on a chanel receive instead
-	//of time.Sleep for example.
-		time.Sleep(time.Second)
 	}
 }

@@ -7,6 +7,8 @@ import (
 	"time"
 
 	"crypto/tls"
+
+	"github.com/golang/glog"
 )
 
 // Structs
@@ -67,6 +69,8 @@ func (c *Conn) sendSimpleCommand(command string) (int64, error) {
 
 	okAnswer := strings.Split(command, " ")[0]
 
+	glog.V(3).Info("Sending command: ", command)
+
 	// Start time taken here.
 	timeStart := time.Now().UnixNano()
 
@@ -80,7 +84,7 @@ func (c *Conn) sendSimpleCommand(command string) (int64, error) {
 		return -1, fmt.Errorf("error during receiving after first imap command: %v", err)
 	}
 
-	//fmt.Printf("%s", answer)
+	glog.V(3).Info("Answer: ", answer)
 
 	for !strings.HasPrefix(answer, okAnswer) {
 
@@ -90,19 +94,17 @@ func (c *Conn) sendSimpleCommand(command string) (int64, error) {
 		}
 
 		answer = nextAnswer
-		//fmt.Printf("%s", answer)
+		glog.V(3).Info("Answer: ", answer)
 	}
 
 	// End time taken here.
 	timeEnd := time.Now().UnixNano()
 
-	// TODO: implement this check!
+	if !strings.Contains(answer, "OK") {
+		glog.Warningf("server responded unexpectedly to command: %s\n by answer: %s", command, answer)
+	}
 
-	// if !strings.Contains(answer, "OK") {
-	// 	return -1, fmt.Errorf("server responded unexpectedly to command: %s", command)
-	// }
 	return (timeEnd - timeStart), nil
-
 }
 
 // sendAppendCommand sends an IMAP command string
@@ -111,6 +113,8 @@ func (c *Conn) sendSimpleCommand(command string) (int64, error) {
 // the message and the receive of the imap confirmation
 // will be counted and returned.
 func (c *Conn) sendAppendCommand(command string, literal string) (int64, error) {
+
+	glog.V(3).Info("Sending command: ", command)
 
 	okAnswer := strings.Split(command, " ")[0]
 
@@ -127,12 +131,15 @@ func (c *Conn) sendAppendCommand(command string, literal string) (int64, error) 
 		return -1, fmt.Errorf("error during receiving after append command: %v", err)
 	}
 
+	glog.V(3).Info("Answer: ", answer)
+
 	if (answer != "+ OK\r\n") && (answer != "+ Ready for literal data\r\n") {
 		return -1, fmt.Errorf("did not receive continuation command from server")
 	}
 
 	// Send message literal.
-	_, err = fmt.Fprintf(c.c, "%s\r\n", literal)
+	//_, err = fmt.Fprintf(c.c, "%s\r\n", literal)
+	_, err = fmt.Fprintf(c.c, "%s", literal)
 	if err != nil {
 		return -1, fmt.Errorf("sending mail message to server failed with: %v", err)
 	}
@@ -142,6 +149,8 @@ func (c *Conn) sendAppendCommand(command string, literal string) (int64, error) 
 		return -1, fmt.Errorf("error during receiving response to APPEND: %v", err)
 	}
 
+	glog.V(3).Info("Answer: ", answer)
+
 	for !strings.HasPrefix(answer, okAnswer) {
 
 		nextAnswer, err := c.r.ReadString('\n')
@@ -150,17 +159,17 @@ func (c *Conn) sendAppendCommand(command string, literal string) (int64, error) 
 		}
 
 		answer = nextAnswer
+		glog.V(3).Info("Answer: ", answer)
 	}
-
 
 	// End time taken here.
 	timeEnd := time.Now().UnixNano()
 
 	if !strings.Contains(answer, "OK") {
-		return -1, fmt.Errorf("server responded unexpectedly to command: %s", command)
+		glog.Warningf("server responded unexpectedly to command: %s", command)
 	}
-	return (timeEnd - timeStart), nil
 
+	return (timeEnd - timeStart), nil
 }
 
 // logout sends a LOGOUT command to the server.
