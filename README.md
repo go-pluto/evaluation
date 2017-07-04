@@ -1,6 +1,6 @@
 # Pluto evaluation
 
-Collection of test scripts for evaluating [pluto](https://github.com/numbleroot/pluto)'s performance compared to [Dovecot](https://www.dovecot.org/).
+Collection of test scripts for evaluating [pluto](https://github.com/go-pluto/pluto)'s performance compared to [Dovecot](https://www.dovecot.org).
 
 
 ## Setup
@@ -59,4 +59,4 @@ That's it!
 
 ## License
 
-This project is [GPLv3](https://github.com/numbleroot/pluto-evaluation/blob/master/LICENSE) licensed.
+This project is [GPLv3](https://github.com/go-pluto/evaluation/blob/master/LICENSE) licensed.

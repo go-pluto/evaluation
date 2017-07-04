@@ -5,10 +5,10 @@ import (
 
 	"math/rand"
 
+	"github.com/go-pluto/evaluation/imap-benchmark/config"
+	"github.com/go-pluto/evaluation/imap-benchmark/sessions"
+	"github.com/go-pluto/evaluation/imap-benchmark/worker"
 	"github.com/golang/glog"
-	"github.com/numbleroot/pluto-evaluation/imap-benchmark/config"
-	"github.com/numbleroot/pluto-evaluation/imap-benchmark/sessions"
-	"github.com/numbleroot/pluto-evaluation/imap-benchmark/worker"
 )
 
 // Functions

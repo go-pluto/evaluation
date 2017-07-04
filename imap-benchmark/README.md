@@ -1,6 +1,6 @@
 # IMAP Benchmark
 
-A tool to generate IMAP traffic for [pluto](https://github.com/numbleroot/pluto), [Dovecot](https://www.dovecot.org/), and other IMAP services (like Gmail).
+A tool to generate IMAP traffic for [pluto](https://github.com/go-pluto/pluto), [Dovecot](https://www.dovecot.org), and other IMAP services (like [Gmail](https://www.google.com/gmail)).
 
 
 ## Traffic Generation
@@ -20,7 +20,7 @@ For the moment we only focus on **state-changing** (i.e. write) commands like:
 To install `imap-benchmark`, please run
 
 ```
-$ go get -u github.com/numbleroot/pluto-evaluation
+$ go get -u github.com/go-pluto/evaluation
 ```
 
 and change into the `imap-benchmark` folder of the cloned repository. Modify the config file `test-config.toml` and the user data base `userdb.passwd`.
@@ -48,4 +48,4 @@ All response times are collected in a log file underneath the `results` folder.
 
 ## License
 
-This project is [GPLv3](https://github.com/numbleroot/pluto-evaluation/blob/master/LICENSE) licensed.
+This project is [GPLv3](https://github.com/go-pluto/evaluation/blob/master/LICENSE) licensed.

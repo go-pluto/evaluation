@@ -7,8 +7,8 @@ import (
 	"crypto/x509"
 	"io/ioutil"
 
-	"github.com/numbleroot/pluto-evaluation/config"
-	"github.com/numbleroot/pluto/crypto"
+	"github.com/go-pluto/evaluation/config"
+	"github.com/go-pluto/pluto/crypto"
 )
 
 // Functions

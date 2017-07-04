@@ -6,7 +6,7 @@ import (
 
 	"math/rand"
 
-	"github.com/numbleroot/pluto-evaluation/imap-benchmark/utils"
+	"github.com/go-pluto/evaluation/imap-benchmark/utils"
 )
 
 // Structs
@@ -242,7 +242,6 @@ func GenerateSession(minLength int, maxLength int) []IMAPCommand {
 					// there are any messages in the folder in order
 					// to allow/disallow the STORE command.
 
-
 					if len(folders[selected].Messages) == 0 {
 
 						// If there are no messages present in the selected
@@ -333,7 +332,6 @@ func GenerateSession(minLength int, maxLength int) []IMAPCommand {
 	var arguments []string
 	arguments = append(arguments, "INBOX")
 	commands = append(commands, IMAPCommand{Command: "SELECT", Arguments: arguments})
-
 
 	// Finish session by deleting all created folders.
 	for i := 0; i < len(folders); i++ {
