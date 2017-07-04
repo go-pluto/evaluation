@@ -12,10 +12,10 @@ import (
 
 	"crypto/tls"
 
-	"github.com/numbleroot/pluto-evaluation/config"
-	"github.com/numbleroot/pluto-evaluation/messages"
-	"github.com/numbleroot/pluto-evaluation/utils"
-	"github.com/numbleroot/pluto/imap"
+	"github.com/go-pluto/evaluation/config"
+	"github.com/go-pluto/evaluation/messages"
+	"github.com/go-pluto/evaluation/utils"
+	"github.com/go-pluto/pluto/imap"
 )
 
 // Functions
