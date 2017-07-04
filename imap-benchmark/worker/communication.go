@@ -138,8 +138,7 @@ func (c *Conn) sendAppendCommand(command string, literal string) (int64, error) 
 	}
 
 	// Send message literal.
-	//_, err = fmt.Fprintf(c.c, "%s\r\n", literal)
-	_, err = fmt.Fprintf(c.c, "%s", literal)
+	_, err = fmt.Fprintf(c.c, "%s\r\n", literal)
 	if err != nil {
 		return -1, fmt.Errorf("sending mail message to server failed with: %v", err)
 	}

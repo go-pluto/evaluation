@@ -156,7 +156,7 @@ func appendMsg(folders *[]Folder) IMAPCommand {
 
 // storeMsg generates a STORE command by choosing a random
 // message and a random set of flags. The flags of the message
-// will be overridden. 
+// will be overridden.
 func storeMsg(folder *Folder) IMAPCommand {
 
 	var arguments []string
